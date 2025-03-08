@@ -1,0 +1,113 @@
+.inquiryDetailContainer {
+  width: 100%;
+  max-width: 1500px;
+  margin-top: 60px;
+  margin-left: auto; /* 추가: 가운데 정렬 */
+  margin-right: auto; /* 추가: 가운데 정렬 */
+}
+
+.inquiryDetailSubject {
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
+.inquiryDetailDate {
+  font-size: 0.9m;
+  color: #666;
+  text-align: right;
+  margin-bottom: 5px;
+}
+
+.inquiryDetailUserId {
+  font-size: 1em;
+  color: #333;
+  text-align: left;
+  margin-top:-40px;
+}
+
+.inquiryDetailHeader {
+  font-size: 1.8em;
+  font-weight: bold;
+  margin-bottom: 0px;
+  padding-bottom: 10px;
+}
+
+.inquiryDetailSubjectRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.inquiryDetailContent {
+  font-size: 1em;
+  color: #333;
+  margin-top: 40px;
+  margin-bottom: 70px;
+  white-space: pre-wrap !important;
+  word-break: break-all;
+}
+
+.inquiryDetailDividerContainer {
+  width: 100%;
+}
+
+.inquiryDetailDivider {
+  border: none;
+  border-top: 1px solid #ccc;
+  width: 100%;
+  margin: -20px 0;
+}
+
+.replyAndCommentHeader {
+  font-size: 1.5em; /* 제목 크기 키움 */
+  font-weight: bold; /* 강조 */
+  color: #333; /* 진한 색상 */
+  margin-bottom: 20px; /* 아래 여백 추가 */
+  border-bottom: 2px solid #ccc; /* 구분선 추가 */
+  padding-bottom: 5px; /* 구분선과의 간격 */
+}
+
+.replyHeader {
+  font-weight: bold; /* 강조 */
+  color: #333; /* 진한 색상 */
+  margin-top: -10px; /* 아래 여백 추가 */
+}
+
+.editAndDeleteHeader {
+  font-weight: bold; /* 강조 */
+  color: #333; /* 진한 색상 */
+  margin-top: 0px; /* 아래 여백 추가 */
+}
+
+.replyContainer {
+  margin-top: 10px;
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  display: flex; /* 자식 요소를 플렉스 박스로 배치 */
+  flex-direction: column;
+  width: 100%; /* 변경: 부모 요소의 너비를 100%로 확장 */
+  max-width: 1500px; /* 추가: 상단 콘텐츠와 동일한 최대 너비 지정 */
+  margin-left: auto; /* 추가: 가운데 정렬 */
+  margin-right: auto; /* 추가: 가운데 정렬 */
+}
+
+.replyContent {
+    margin-top: -10px;
+}
+
+.replyInput {
+  margin-bottom: 10px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
+}
+
+.replyDate {
+  color: #888; /* 날짜를 약간 흐린 색상으로 */
+  font-size: 0.9rem; /* 텍스트보다 살짝 작은 글씨로 */
+}
