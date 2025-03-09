@@ -3,6 +3,7 @@ package com.pofo.backend.domain.user.mypage.controller;
 import com.pofo.backend.common.rsData.RsData;
 import com.pofo.backend.domain.user.join.entity.User;
 import com.pofo.backend.domain.user.join.repository.UserRepository;
+
 import com.pofo.backend.domain.user.mypage.dto.MypageResponseDto;
 import com.pofo.backend.domain.user.mypage.service.MypageService;
 import lombok.RequiredArgsConstructor;
@@ -14,8 +15,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -32,20 +31,26 @@ public class MypageContoller {
                     .body(new RsData<>("401", "로그인이 필요합니다.", null));
         }
 
-        Optional<User> optionalUser = userRepository.findByEmail(authentication.getName());
-        if (optionalUser.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new RsData<>("404", "유저 정보를 찾을 수 없습니다.", null));
-        }
-
-        return ResponseEntity.ok(new RsData<>("200", "유저 정보 조회 성공", optionalUser.get()));
+        return userRepository.findByEmail(authentication.getName())
+                .map(user -> ResponseEntity.ok(new RsData<>("200", "유저 정보 조회 성공", user)))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new RsData<>("404", "유저 정보를 찾을 수 없습니다.", null)));
     }
 
 
     @GetMapping("/mypage")
     public ResponseEntity<RsData<MypageResponseDto>> getMypage(@RequestParam String email) {
-        MypageResponseDto myPageData = mypageService.getMypageData(email);
+        if (email == null || email.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new RsData<>("400", "이메일을 입력해주세요.", null));
+        }
 
-        return ResponseEntity.ok(new RsData<>("200", "마이페이지 정보 조회 성공", myPageData));
+        try {
+            MypageResponseDto myPageData = mypageService.getMypageData(email);
+            return ResponseEntity.ok(new RsData<>("200", "마이페이지 정보 조회 성공", myPageData));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new RsData<>("404", e.getMessage(), null));
+        }
     }
 }

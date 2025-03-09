@@ -4,7 +4,6 @@ import com.pofo.backend.common.rsData.RsData;
 import com.pofo.backend.common.security.cookie.TokenCookieUtil;
 import com.pofo.backend.domain.user.resign.dto.UserResignResponseDto;
 import com.pofo.backend.domain.user.resign.service.UserResignService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
