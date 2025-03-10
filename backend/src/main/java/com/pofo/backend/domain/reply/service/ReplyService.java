@@ -57,7 +57,8 @@ public class ReplyService {
         Reply reply = this.replyRepository.findByInquiryIdAndId(inquiryId, replyId)
                 .orElseThrow(() -> new ReplyException("해당 답변을 찾을 수 없습니다."));
 
-        if (!reply.getAdmin().equals(admin)) {
+        if (reply.getAdmin() != null && reply.getAdmin().getUsername().equals(admin.getUsername())) {
+//        if (!reply.getAdmin().equals(admin)) {
             throw new UnauthorizedActionException("답변을 수정할 권한이 없습니다.");
         }
 
@@ -75,7 +76,7 @@ public class ReplyService {
         Reply reply = this.replyRepository.findByInquiryIdAndId(inquiryId, replyId)
                 .orElseThrow(() -> new ReplyException("해당 답변을 찾을 수 없습니다."));
 
-        if (!reply.getAdmin().equals(admin)) {
+        if (reply.getAdmin() != null && reply.getAdmin().getUsername().equals(admin.getUsername())) {
             throw new UnauthorizedActionException("답변을 수정할 권한이 없습니다.");
         }
 

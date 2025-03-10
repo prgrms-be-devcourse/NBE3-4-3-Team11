@@ -50,7 +50,9 @@ public class NoticeService {
         Notice notice = this.noticeRepository.findById(id)
                 .orElseThrow(() -> new NoticeException("해당 공지사항을 찾을 수 없습니다."));
 
-        if (!notice.getAdmin().equals(admin)) {
+//        if (!notice.getAdmin().equals(admin)) {
+        if (notice.getAdmin() != null && notice.getAdmin().getUsername().equals(admin.getUsername())) {
+
             throw new UnauthorizedActionException("공지사항을 수정할 권한이 없습니다.");
         }
 
@@ -68,7 +70,9 @@ public class NoticeService {
         Notice notice = this.noticeRepository.findById(id)
                 .orElseThrow(() -> new NoticeException("해당 공지사항을 찾을 수 없습니다."));
 
-        if (notice.getAdmin().equals(admin)) {
+//        if (notice.getAdmin().equals(admin)) {
+        if (notice.getAdmin() != null && notice.getAdmin().getUsername().equals(admin.getUsername())) {
+
             try {
                 this.noticeRepository.delete(notice);
             } catch (Exception e) {
