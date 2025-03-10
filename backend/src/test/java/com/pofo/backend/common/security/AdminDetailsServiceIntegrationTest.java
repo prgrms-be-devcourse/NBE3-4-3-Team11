@@ -1,7 +1,6 @@
 package com.pofo.backend.common.security;
 
 
-import com.pofo.backend.domain.admin.login.entitiy.Admin;
 import com.pofo.backend.domain.admin.login.repository.AdminRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

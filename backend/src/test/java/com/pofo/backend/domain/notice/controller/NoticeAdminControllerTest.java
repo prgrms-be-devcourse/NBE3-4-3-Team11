@@ -3,7 +3,6 @@ package com.pofo.backend.domain.notice.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pofo.backend.common.TestSecurityConfig;
-import com.pofo.backend.domain.admin.login.entitiy.Admin;
 import com.pofo.backend.domain.admin.login.repository.AdminRepository;
 import com.pofo.backend.domain.notice.dto.reponse.NoticeDetailResponse;
 import com.pofo.backend.domain.notice.dto.request.NoticeCreateRequest;
