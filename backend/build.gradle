@@ -5,6 +5,7 @@ plugins {
 	id 'org.jetbrains.kotlin.jvm' version '2.1.10'
 	id 'org.jetbrains.kotlin.plugin.spring' version '2.1.10'
 	id 'org.jetbrains.kotlin.plugin.jpa' version '2.1.10'
+	id 'org.jetbrains.kotlin.kapt' version '2.1.10' // kapt 플러그인 추가
 }
 
 group = 'com.pofo'
@@ -27,9 +28,10 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	compileOnly 'org.projectlombok:lombok'
+	kapt 'org.projectlombok:lombok' // Lombok kapt 의존성 추가
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'com.mysql:mysql-connector-j'
-	annotationProcessor 'org.projectlombok:lombok'
+	// annotationProcessor 'org.projectlombok:lombok' // kapt 사용으로 제거
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -49,8 +51,8 @@ dependencies {
 	implementation 'io.lettuce:lettuce-core:6.3.1.RELEASE'
 
 	implementation 'org.mapstruct:mapstruct:1.5.2.Final'
-	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.2.Final'
-	annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+	kapt 'org.mapstruct:mapstruct-processor:1.5.2.Final' // MapStruct processor kapt 의존성 추가
+	kapt 'org.projectlombok:lombok-mapstruct-binding:0.2.0' // Lombok MapStruct binding kapt 의존성 추가
 	implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.16.1'
 	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
@@ -61,6 +63,7 @@ dependencies {
 	// Kotlin
 	implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 	implementation 'org.mapstruct:mapstruct-kotlin:1.5.2.Final'
+	implementation "org.jetbrains.kotlin:kotlin-reflect:2.1.10"
 }
 
 tasks.named('test') {

@@ -1,6 +1,5 @@
 package com.pofo.backend.domain.admin.userstats.service
 
-import com.pofo.backend.domain.admin.userstats.dto.UserStatsDto
 import com.pofo.backend.domain.admin.userstats.repository.UserStatsRepository
 import com.pofo.backend.domain.user.join.entity.User
 import com.pofo.backend.domain.user.join.entity.User.Sex
@@ -8,6 +7,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import java.time.LocalDate
+import com.pofo.backend.domain.admin.userstats.dto.UserStatsDto
 
 @Service
 class UserStatsService(
