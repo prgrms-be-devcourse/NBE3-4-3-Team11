@@ -1,31 +1,19 @@
 package com.pofo.backend.domain.project.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import java.time.LocalDate
 
-import java.time.LocalDate;
-import java.util.List;
-
-@AllArgsConstructor
-@Getter
-public class ProjectUpdateResponse {
-
-    private Long projectId;
-    private String name;
-    private LocalDate startDate;
-    private LocalDate endDate;
-
-    private int memberCount;
-    private String position;
-    private String repositoryLink;
-    private String description;
-    private String imageUrl;
-
-    private String thumbnailPath;
-
-    // 프로젝트 상세 조회 응답에 기술 및 도구 목록 추가
-    private List<String> skills;
-    private List<String> tools;
-
-    private boolean isDeleted;
-}
+data class ProjectUpdateResponse(
+    val projectId: Long,
+    val name : String,
+    val startDate: LocalDate,
+    val endDate: LocalDate,
+    val memberCount: Int,
+    val position : String,
+    val repositoryLink: String,
+    val description: String,
+    val imageUrl: String,
+    val thumbnailPath: String,
+    val skills: List<String> = emptyList(),
+    val tools: List<String> = emptyList(),
+    val isDeleted: Boolean
+)
