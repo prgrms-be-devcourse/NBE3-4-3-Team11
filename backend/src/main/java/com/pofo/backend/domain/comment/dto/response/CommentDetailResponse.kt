@@ -1,21 +1,21 @@
-package com.pofo.backend.domain.comment.dto.response;
+package com.pofo.backend.domain.comment.dto.response
 
-import com.pofo.backend.domain.comment.entity.Comment;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import com.pofo.backend.domain.comment.entity.Comment
+import java.time.LocalDateTime
 
-import java.time.LocalDateTime;
-
-@Getter
-@AllArgsConstructor
-public class CommentDetailResponse {
-
-    private Long id;
-    private String content;
-    private LocalDateTime createdAt;
-    private final String type = "comment";
-
-    public static CommentDetailResponse from(Comment comment) {
-        return new CommentDetailResponse(comment.getId(), comment.getContent(), comment.getCreatedAt());
+data class CommentDetailResponse(
+    val id: Long?,
+    val content: String,
+    val createdAt: LocalDateTime,
+    val type: String = "comment"
+) {
+    companion object {
+        fun from(comment: Comment): CommentDetailResponse {
+            return CommentDetailResponse(
+                id = comment.id,
+                content = comment.content,
+                createdAt = comment.createdAt
+            )
+        }
     }
 }
