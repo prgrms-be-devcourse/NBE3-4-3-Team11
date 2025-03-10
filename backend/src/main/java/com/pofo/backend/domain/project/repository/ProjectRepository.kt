@@ -6,21 +6,17 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
+interface ProjectRepository : JpaRepository<Project, Long> {
 
-public interface ProjectRepository extends JpaRepository<Project, Long> {
-
-   List<Project>  findAllByOrderByIdDesc();
-
-   List<Project> findByIsDeletedFalseOrderByIdDesc();
+   fun findByIsDeletedFalseOrderByIdDesc():  List<Project>
 
    @Query("SELECT p FROM Project p WHERE " +
            "LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
            "OR LOWER(CAST(p.description AS string)) LIKE LOWER(CONCAT('%', :keyword, '%'))")
-   List<Project> searchByKeyword(@Param("keyword") String keyword);
+   fun searchByKeyword(@Param("keyword") keyword: String): List<Project>
 
-   List<Project> findByUserAndIsDeletedTrue(User user);
+   fun findByUserAndIsDeletedTrue(user: User): List<Project>
 
 
-   List<Project> findByIdInAndIsDeletedTrue(List<Long> projectIds);
+   fun findByIdInAndIsDeletedTrue(projectIds: List<Long> ) : List<Project>
 }
