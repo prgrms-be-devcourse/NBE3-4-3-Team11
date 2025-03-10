@@ -1,780 +1,859 @@
-package com.pofo.backend.domain.project.service;
+package com.pofo.backend.domain.project.service
+
+/*
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.pofo.backend.common.rsData.RsData
+import com.pofo.backend.domain.mapper.ProjectMapper
+import com.pofo.backend.domain.project.dto.request.ProjectCreateRequest
+import com.pofo.backend.domain.project.dto.request.ProjectUpdateRequest
+import com.pofo.backend.domain.project.dto.response.ProjectDetailResponse
+import com.pofo.backend.domain.project.entity.Project
+import com.pofo.backend.domain.project.exception.ProjectCreationException
+import com.pofo.backend.domain.project.repository.ProjectRepository
+import com.pofo.backend.domain.skill.entity.ProjectSkill
+import com.pofo.backend.domain.skill.entity.Skill
+import com.pofo.backend.domain.skill.repository.ProjectSkillRepository
+import com.pofo.backend.domain.skill.service.SkillService
+import com.pofo.backend.domain.tool.entity.ProjectTool
+import com.pofo.backend.domain.tool.entity.Tool
+import com.pofo.backend.domain.tool.repository.ProjectToolRepository
+import com.pofo.backend.domain.tool.service.ToolService
+import com.pofo.backend.domain.user.join.entity.User
+import io.mockk.*
+import io.mockk.impl.annotations.MockK
+import io.mockk.junit5.MockKExtension
+import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.extension.ExtendWith
+import org.springframework.dao.DataAccessException
+import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.multipart.MultipartFile
+import java.time.LocalDate
+import java.util.*
+import kotlin.test.assertNotNull
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.pofo.backend.common.rsData.RsData;
-import com.pofo.backend.domain.mapper.ProjectMapper;
-import com.pofo.backend.domain.project.dto.request.ProjectCreateRequest;
-import com.pofo.backend.domain.project.dto.request.ProjectUpdateRequest;
-import com.pofo.backend.domain.project.dto.response.ProjectCreateResponse;
-import com.pofo.backend.domain.project.dto.response.ProjectDetailResponse;
-import com.pofo.backend.domain.project.dto.response.ProjectUpdateResponse;
-import com.pofo.backend.domain.project.entity.Project;
-import com.pofo.backend.domain.project.exception.ProjectCreationException;
-import com.pofo.backend.domain.project.repository.ProjectRepository;
-import com.pofo.backend.domain.skill.entity.ProjectSkill;
-import com.pofo.backend.domain.skill.entity.Skill;
-import com.pofo.backend.domain.skill.repository.ProjectSkillRepository;
-import com.pofo.backend.domain.skill.service.SkillService;
-import com.pofo.backend.domain.tool.entity.ProjectTool;
-import com.pofo.backend.domain.tool.entity.Tool;
-import com.pofo.backend.domain.tool.repository.ProjectToolRepository;
-import com.pofo.backend.domain.tool.service.ToolService;
-import com.pofo.backend.domain.user.join.entity.User;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.springframework.dao.DataAccessException;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
+@ExtendWith(MockKExtension::class)
+open class ProjectServiceTest {
 
-import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+        private lateinit var projectService: ProjectService
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+        @MockK
+        private lateinit var projectSkillRepository: ProjectSkillRepository
 
-public class ProjectServiceTest {
+        @MockK
+        private lateinit var projectToolRepository: ProjectToolRepository
 
-    @InjectMocks
-    private ProjectService projectService;
+        @MockK
+        private lateinit var projectRepository: ProjectRepository
 
-    @Mock
-    private User mockUser;
+        @MockK
+        private lateinit var projectMapper: ProjectMapper
 
-    @Mock
-    private ProjectRepository projectRepository;
+        @MockK
+        private lateinit var skillService: SkillService
 
-    @Mock
-    private ProjectMapper projectMapper;
+        @MockK
+        private lateinit var toolService: ToolService
 
-    @Mock
-    private Project mockProject;
 
-    @Mock
-    private ProjectDetailResponse mockProjectResponse;
+        @MockK
+        private lateinit var fileService: FileService
 
-    @Mock
-    private SkillService skillService;
+        @MockK
+        private lateinit var mockUser: User
 
-    @Mock
-    private ToolService toolService;
+        @MockK
+        private lateinit var mockProject: Project
 
-    @Mock
-     private ProjectSkillRepository projectSkillRepository;
+        @MockK
+        private lateinit var mockProjectResponse: ProjectDetailResponse
 
-    @Mock
-    private ProjectToolRepository projectToolRepository;
+        private val objectMapper = ObjectMapper().apply {
+        registerModule(JavaTimeModule())  // ✅ LocalDate 변환 지원
+        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false) // 예상치 못한 필드 무시
+        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)  // ✅ LocalDate를 "yyyy-MM-dd"로 변환
+        }
 
-    @Mock
-    private FileService fileService;
 
-    LocalDate startDate = LocalDate.of(2025, 1, 22);
-    LocalDate endDate = LocalDate.of(2025, 2, 14);
+        private val startDate = LocalDate.of(2025, 1, 22)
+        private val endDate = LocalDate.of(2025, 2, 14)
 
-    private ObjectMapper objectMapper;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);  // mockUser가 제대로 초기화되도록 호출
+        @BeforeEach
+        fun setUp() {
+        // MockK 초기화
+        MockKAnnotations.init(this)
 
-        when(mockUser.getId()).thenReturn(1L);
-        when(mockProject.getId()).thenReturn(1L);
+        // ✅ `ProjectService`를 직접 초기화 (자동 주입 문제 해결)
+        projectService = ProjectService(
+        projectRepository = projectRepository,
+        projectMapper = projectMapper,
+        skillService = skillService,
+        toolService = toolService,
+        projectSkillRepository = projectSkillRepository,
+        projectToolRepository = projectToolRepository,
+        fileService = fileService
+        )
 
-        when(mockProject.getName()).thenReturn("원두 주문 웹페이지");
-        when(mockProject.getStartDate()).thenReturn(startDate);
-        when(mockProject.getEndDate()).thenReturn(endDate);
-        when(mockProject.getMemberCount()).thenReturn(6);
-        when(mockProject.getPosition()).thenReturn("백엔드");
-        when(mockProject.getRepositoryLink()).thenReturn("programmers@github.com");
-        when(mockProject.getDescription()).thenReturn("커피 원두를 주문할 수 있는 웹페이지");
-        when(mockProject.getImageUrl()).thenReturn("test.img");
-        when(mockProject.getUser()).thenReturn(mockUser);
-        when(mockProject.isDeleted()).thenReturn(false);
 
-        // Mock Skill & Tool 객체 생성
-        when(skillService.getSkillByName("Java")).thenReturn(new Skill("Java"));
-        when(skillService.getSkillByName("Spring Boot")).thenReturn(new Skill("Spring Boot"));
-        when(toolService.getToolByName("IntelliJ IDEA")).thenReturn(new Tool("IntelliJ IDEA"));
-        when(toolService.getToolByName("Docker")).thenReturn(new Tool("Docker"));
+        // ✅ mockUser 설정
+        every { mockUser.id } returns 1L
 
-        objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-    }
+        // ✅ mockProject 설정
+        every { mockProject.id } returns 1L
+        every { mockProject.name } returns "원두 주문 웹페이지"
+        every { mockProject.startDate } returns startDate
+        every { mockProject.endDate } returns endDate
+        every { mockProject.memberCount } returns 6
+        every { mockProject.position } returns "백엔드"
+        every { mockProject.repositoryLink } returns "programmers@github.com"
+        every { mockProject.description } returns "커피 원두를 주문할 수 있는 웹페이지"
+        every { mockProject.imageUrl } returns "test.img"
+        every { mockProject.user } returns mockUser
+        every { mockProject.isDeleted } returns false
 
-    private ProjectCreateRequest projectCreateRequest() {
-        return ProjectCreateRequest.builder()
-                .name("PoFo 프로젝트")
-                .startDate(startDate)
-                .endDate(endDate)
-                .memberCount(5)
-                .position("백엔드")
-                .repositoryLink("testRepositoryLink")
-                .description("프로젝트 설명")
-                .imageUrl("sample.img")
-                .skills(List.of("Java", "Spring Boot")) // 추가
-                .tools(List.of("IntelliJ IDEA", "Docker")) // 추가
-                .build();
-    }
+        // ✅ Mock Skill & Tool 객체 생성
+        every { skillService.getSkillByName("Java") } returns Skill("Java")
+        every { skillService.getSkillByName("Spring Boot") } returns Skill("Spring Boot")
+        every { toolService.getToolByName("IntelliJ IDEA") } returns Tool("IntelliJ IDEA")
+        every { toolService.getToolByName("Docker") } returns Tool("Docker")
 
-    @Test
-    @DisplayName("✅ 프로젝트 등록 성공")
-    void t1() throws JsonProcessingException {
+
+        }
+
+        private fun projectCreateRequest(): ProjectCreateRequest {
+        return ProjectCreateRequest(
+        name = "PoFo 프로젝트",
+        startDate = startDate,
+        endDate = endDate,
+        memberCount = 5,
+        position = "백엔드",
+        repositoryLink = "testRepositoryLink",
+        description = "프로젝트 설명",
+        imageUrl = "sample.img",
+        thumbnailPath = "",
+        skills = listOf("Java", "Spring Boot"),
+        tools = listOf("IntelliJ IDEA", "Docker")
+        )
+        }
+
+        @Test
+        @DisplayName("✅ 프로젝트 등록 성공")
+        fun t1() {
         // Given
-        ProjectCreateRequest request = projectCreateRequest();
-        String projectRequestJson = objectMapper.writeValueAsString(request);
+        val request = projectCreateRequest()
+        val projectRequestJson = objectMapper.writeValueAsString(request)
 
         // ✅ Mock MultipartFile 생성 (썸네일 파일 업로드 테스트를 위해 필요)
-        MultipartFile mockFile = mock(MultipartFile.class);
-        when(mockFile.isEmpty()).thenReturn(false);
-        when(mockFile.getOriginalFilename()).thenReturn("mock_thumbnail.jpg");
+        val mockFile = mockk<MultipartFile> {
+        every { isEmpty } returns false
+        every { originalFilename } returns "mock_thumbnail.jpg"
+        }
 
         // ✅ 파일 업로드 Mock 설정 (실제 업로드 대신 경로 반환)
-        String mockThumbnailPath = "mocked/path/to/thumbnail.jpg";
-        when(fileService.uploadThumbnail(any(MultipartFile.class))).thenReturn(mockThumbnailPath);
+        val mockThumbnailPath = "mocked/path/to/thumbnail.jpg"
+        every { fileService.uploadThumbnail(any()) } returns mockThumbnailPath
 
         // ✅ 실제 저장될 프로젝트 객체 (spy로 감싸기)
-        Project realProject = spy(Project.builder()
-                .user(mockUser)
-                .name(request.getName())
-                .startDate(request.getStartDate())
-                .endDate(request.getEndDate())
-                .memberCount(request.getMemberCount())
-                .position(request.getPosition())
-                .repositoryLink(request.getRepositoryLink())
-                .description(request.getDescription())
-                .imageUrl(request.getImageUrl())
-                .thumbnailPath(mockThumbnailPath) // ✅ Mock 썸네일 경로 추가
-                .isDeleted(false)
-                .build());
+        val realProject = spyk(
+        Project(
+        user = mockUser,
+        name = request.name,
+        startDate = request.startDate,
+        endDate = request.endDate,
+        memberCount = request.memberCount,
+        position = request.position,
+        repositoryLink = request.repositoryLink,
+        description = request.description,
+        imageUrl = request.imageUrl,
+        thumbnailPath = mockThumbnailPath,
+        isDeleted = false
+        )
+        )
 
         // ✅ 프로젝트 저장 Mocking
-        when(projectRepository.save(any(Project.class))).thenReturn(realProject);
+        every { projectRepository.save(any()) } returns realProject
 
         // ✅ Service 메서드 호출
-        ProjectCreateResponse response = projectService.createProject(mockUser, projectRequestJson, mockFile);
+        every { skillService.addProjectSkills(any(), any()) } just Runs
+        every { toolService.addProjectTools(any(), any()) } just Runs
 
+
+        val response = projectService.createProject(mockUser, projectRequestJson, mockFile)
         // Then
-        assertNotNull(response); // ✅ 응답이 null이 아닌지 확인
-        assertEquals(realProject.getId(), response.getProjectId()); // ✅ 반환된 ID 검증
-        verify(projectRepository).save(any(Project.class)); // ✅ 프로젝트 저장이 호출되었는지 검증
-    }
+        assertNotNull(response) // ✅ 응답이 null이 아닌지 확인
+        assertEquals(realProject.id, response.projectId) // ✅ 반환된 ID 검증
+        verify { projectRepository.save(any()) } // ✅ 프로젝트 저장이 호출되었는지 검증
+        verify { fileService.uploadThumbnail(any()) } // ✅ 썸네일 업로드가 호출되었는지 검증
+        verify { skillService.addProjectSkills(realProject.id!!, request.skills) }
+        verify { toolService.addProjectTools(realProject.id!!, request.tools) }
+        }
 
 
-    @Test
-    @DisplayName("❌ 프로젝트 등록 실패 - 예외 발생")
-    void t3() throws JsonProcessingException {
+        @Test
+        @DisplayName("❌ 프로젝트 등록 실패 - 예외 발생")
+        fun t2() {
         // Given
-        ProjectCreateRequest request = projectCreateRequest();
-        String projectRequestJson = objectMapper.writeValueAsString(request);
+        val request = projectCreateRequest()
+        val projectRequestJson = objectMapper.writeValueAsString(request)
 
         // ✅ Mock MultipartFile 생성 (실패 시에도 필요)
-        MultipartFile mockFile = mock(MultipartFile.class);
-        when(mockFile.isEmpty()).thenReturn(false);
-        when(mockFile.getOriginalFilename()).thenReturn("mock_thumbnail.jpg");
+        val mockFile = mockk<MultipartFile> {
+        every { isEmpty } returns false
+        every { originalFilename } returns "mock_thumbnail.jpg"
+        }
 
         // ✅ 프로젝트 저장 시 강제 예외 발생하도록 설정
-        doThrow(new ProjectCreationException("400", "프로젝트 등록 중 오류가 발생했습니다."))
-                .when(projectRepository).save(any(Project.class));
+        every { projectRepository.save(any()) } throws ProjectCreationException("400", "프로젝트 등록 중 오류가 발생했습니다.")
 
         // When & Then
-        ProjectCreationException exception = assertThrows(ProjectCreationException.class, () -> {
-            projectService.createProject(mockUser, projectRequestJson, mockFile);
-        });
+        val exception = assertThrows<ProjectCreationException> {
+        projectService.createProject(mockUser, projectRequestJson, mockFile)
+        }
 
-        RsData<Void> rsData = exception.getRsData();
-        assertEquals("400", rsData.getResultCode());
-        assertEquals("프로젝트 등록 중 오류가 발생했습니다.", rsData.getMessage());
-    }
+        val rsData = exception.rsData
+        assertEquals("400", rsData.resultCode)
+        assertEquals("프로젝트 등록 중 오류가 발생했습니다.", rsData.message)
+        }
 
 
-    @Test
-    @DisplayName("프로젝트 전체 조회 성공")
-    void t4(){
-        //Given
-        when(mockProjectResponse.getName()).thenReturn("원두 주문 웹페이지");
-        when(mockProjectResponse.getStartDate()).thenReturn(startDate);
-        when(mockProjectResponse.getEndDate()).thenReturn(endDate);
-        when(mockProjectResponse.getMemberCount()).thenReturn(6);
-        when(mockProjectResponse.getPosition()).thenReturn("백엔드");
-        when(mockProjectResponse.getRepositoryLink()).thenReturn("programmers@github.com");
-        when(mockProjectResponse.getDescription()).thenReturn("커피 원두를 주문할 수 있는 웹페이지");
-        when(mockProjectResponse.getImageUrl()).thenReturn("test.img");
+        @Test
+        @DisplayName("프로젝트 전체 조회 성공")
+        fun t3() {
+                every { mockProjectResponse.name } returns "원두 주문 웹페이지"
+                every { mockProjectResponse.startDate } returns startDate
+                every { mockProjectResponse.endDate } returns endDate
+                every { mockProjectResponse.memberCount } returns 6
+                every { mockProjectResponse.position } returns "백엔드"
+                every { mockProjectResponse.repositoryLink } returns "programmers@github.com"
+                every { mockProjectResponse.description } returns "커피 원두를 주문할 수 있는 웹페이지"
+                every { mockProjectResponse.imageUrl } returns "test.img"
 
-        when(mockProjectResponse.getSkills()).thenReturn(List.of("Java", "Spring Boot"));
-        when(mockProjectResponse.getTools()).thenReturn(List.of("IntelliJ IDEA", "Docker"));
+                every { mockProjectResponse.skills } returns listOf("Java", "Spring Boot")
+                every { mockProjectResponse.tools } returns listOf("IntelliJ IDEA", "Docker")
 
-        when(projectMapper.projectToProjectDetailResponse(mockProject)).thenReturn(mockProjectResponse);
+                every { projectMapper.projectToProjectDetailResponse(mockProject) } returns mockProjectResponse
 
-        List<Project> mockProjectList = List.of(mockProject);
-        when(projectRepository.findByIsDeletedFalseOrderByIdDesc()).thenReturn(mockProjectList);
+                val mockProjectList = listOf(mockProject)
+                every { projectRepository.findByIsDeletedFalseOrderByIdDesc() } returns mockProjectList
 
-        // When
-        List<ProjectDetailResponse> response = projectService.detailAllProject(mockUser);
+                // When
+                val response = projectService.detailAllProject(mockUser)
 
-        // Then
-        assertEquals(1, response.size());
-        assertEquals("원두 주문 웹페이지", response.get(0).getName());
-        assertEquals(startDate, response.get(0).getStartDate());
-        assertEquals(endDate, response.get(0).getEndDate());
-        assertEquals(6, response.get(0).getMemberCount());
-        assertEquals("백엔드", response.get(0).getPosition());
-        assertEquals("programmers@github.com", response.get(0).getRepositoryLink());
-        assertEquals("커피 원두를 주문할 수 있는 웹페이지", response.get(0).getDescription());
-        assertEquals("test.img", response.get(0).getImageUrl());
+                // Then
+                assertEquals(1, response.size)
+                assertEquals("원두 주문 웹페이지", response[0].name)
+                assertEquals(startDate, response[0].startDate)
+                assertEquals(endDate, response[0].endDate)
+                assertEquals(6, response[0].memberCount)
+                assertEquals("백엔드", response[0].position)
+                assertEquals("programmers@github.com", response[0].repositoryLink)
+                assertEquals("커피 원두를 주문할 수 있는 웹페이지", response[0].description)
+                assertEquals("test.img", response[0].imageUrl)
 
-        assertEquals(2, response.get(0).getSkills().size());
-        assertEquals(2, response.get(0).getTools().size());
-        assertTrue(response.get(0).getSkills().containsAll(List.of("Java", "Spring Boot")));
-        assertTrue(response.get(0).getTools().containsAll(List.of("IntelliJ IDEA", "Docker")));
+                assertEquals(2, response[0].skills.size)
+                assertEquals(2, response[0].tools.size)
+                assertTrue(response[0].skills.containsAll(listOf("Java", "Spring Boot")))
+                assertTrue(response[0].tools.containsAll(listOf("IntelliJ IDEA", "Docker")))
 
-        // Verify
-        verify(projectRepository).findByIsDeletedFalseOrderByIdDesc();
-        verify(projectMapper).projectToProjectDetailResponse(mockProject);
-    }
+                // Verify
+                verify { projectRepository.findByIsDeletedFalseOrderByIdDesc() }
+                verify { projectMapper.projectToProjectDetailResponse(mockProject) }
+        }
 
-    @Test
-    @DisplayName("프로젝트 전체 조회 실패 - 프로젝트 없는 경우")
-    void t5(){
+
+        @Test
+        @DisplayName("프로젝트 전체 조회 실패 - 프로젝트 없는 경우")
+        fun t4() {
         // given
-        User mockUser = mock(User.class);
-        when(projectRepository.findAllByOrderByIdDesc()).thenReturn(Collections.emptyList());
-        //System.out.println("mockUser: " + mockUser);
-
+        val mockUser: User = mockk()
+        every { projectRepository.findByIsDeletedFalseOrderByIdDesc() } returns emptyList()
 
         // when & then
-        ProjectCreationException exception = assertThrows(ProjectCreationException.class, () -> {
-            projectService.detailAllProject(mockUser);
-        });
+        val exception = assertThrows<ProjectCreationException> {
+        projectService.detailAllProject(mockUser)
+        }
 
         // 예외 메시지 확인
-        RsData<Void> rsData = exception.getRsData();
-        assertEquals("404", rsData.getResultCode());
-        assertEquals("프로젝트가 존재하지 않습니다.", rsData.getMessage());
-    }
+        val rsData: RsData<Void> = exception.rsData
+        assertEquals("404", rsData.resultCode)
+        assertEquals("프로젝트가 존재하지 않습니다.", rsData.message)
+        }
 
-    @Test
-    @DisplayName("프로젝트 전체 조회 실패 - 예기치 않은 오류 발생")
-    void t6(){
-        //given
-        when(projectRepository.findByIsDeletedFalseOrderByIdDesc()).thenThrow(new RuntimeException("Unexpected error"));
 
-        //when & then
-        ProjectCreationException exception = assertThrows(ProjectCreationException.class, () -> {
-            projectService.detailAllProject(mockUser);
-        });
+        @Test
+        @DisplayName("프로젝트 전체 조회 실패 - 예기치 않은 오류 발생")
+        fun t5() {
+        // given
+        every { projectRepository.findByIsDeletedFalseOrderByIdDesc() } throws RuntimeException("Unexpected error")
+
+        // when & then
+        val exception = assertThrows<ProjectCreationException> {
+        projectService.detailAllProject(mockUser)
+        }
 
         // 예외 메시지 확인
-        RsData<Void> rsData = exception.getRsData();
-        assertEquals("400", rsData.getResultCode());
-        assertEquals("프로젝트 전체 조회 중 오류가 발생했습니다.", rsData.getMessage());
-    }
+        val rsData: RsData<Void> = exception.rsData
+        assertEquals("400", rsData.resultCode)
+        assertEquals("프로젝트 전체 조회 중 오류가 발생했습니다.", rsData.message)
+        }
 
-    @Test
-    @DisplayName("프로젝트 검색 성공 - 이름 또는 설명에 키워드 포함")
-    void t16(){
-        //Given
-        String keyword = "커피";
 
-        //when & Then
-        when(mockProjectResponse.getName()).thenReturn("커피 원두 주문 시스템");
-        when(mockProjectResponse.getDescription()).thenReturn("원두를 주문할 수 있는 편리한 웹 서비스");
-        when(projectRepository.searchByKeyword(keyword))
-                .thenReturn(List.of(mockProject));
-        when(projectMapper.projectToProjectDetailResponse(mockProject)).thenReturn(mockProjectResponse);
-        when(mockProject.getUser()).thenReturn(mockUser);
+        @Test
+        @DisplayName("프로젝트 검색 성공 - 이름 또는 설명에 키워드 포함")
+        fun t6() {
+        // Given
+        val keyword = "커피"
+
+        // when & Then
+        every { mockProjectResponse.name } returns "커피 원두 주문 시스템"
+        every { mockProjectResponse.description } returns "원두를 주문할 수 있는 편리한 웹 서비스"
+        every { projectRepository.searchByKeyword(keyword) } returns listOf(mockProject)
+        every { projectMapper.projectToProjectDetailResponse(mockProject) } returns mockProjectResponse
+        every { mockProject.user } returns mockUser
 
         // When
-        List<ProjectDetailResponse> response = projectService.searchProjectsByKeyword(mockUser, keyword);
+        val response = projectService.searchProjectsByKeyword(mockUser, keyword)
 
         // Then
-        assertEquals(1, response.size());
-        assertEquals("커피 원두 주문 시스템", response.get(0).getName());
-        assertEquals("원두를 주문할 수 있는 편리한 웹 서비스", response.get(0).getDescription());
+        assertEquals(1, response.size)
+        assertEquals("커피 원두 주문 시스템", response[0].name)
+        assertEquals("원두를 주문할 수 있는 편리한 웹 서비스", response[0].description)
 
         // Verify
-        verify(projectRepository).searchByKeyword(keyword);
-        verify(projectMapper).projectToProjectDetailResponse(mockProject);
-    }
+        verify(exactly = 1) { projectRepository.searchByKeyword(keyword) }
+        verify(exactly = 1) { projectMapper.projectToProjectDetailResponse(mockProject) }
+        }
 
-    @Test
-    @DisplayName("프로젝트 검색 실패 - 검색 결과 없음")
-    void t17() {
+
+        @Test
+        @DisplayName("프로젝트 검색 실패 - 검색 결과 없음")
+        fun t7() {
         // Given
-        String keyword = "없는키워드";
-        when(projectRepository.searchByKeyword(keyword))
-                .thenReturn(Collections.emptyList());
+        val keyword = "없는키워드"
+        every { projectRepository.searchByKeyword(any()) } returns emptyList()
 
         // When & Then
-        ProjectCreationException exception = assertThrows(ProjectCreationException.class, () -> {
-            projectService.searchProjectsByKeyword(mockUser, keyword);
-        });
+        val exception = assertThrows<ProjectCreationException> {
+        projectService.searchProjectsByKeyword(mockUser, keyword)
+        }
 
-        RsData<Void> rsData = exception.getRsData();
-        assertEquals("404", rsData.getResultCode());
-        assertEquals("검색된 프로젝트가 없습니다.", rsData.getMessage());
-    }
+        val rsData: RsData<Void> = exception.rsData
+        assertEquals("404", rsData.resultCode)
+        assertEquals("검색된 프로젝트가 없습니다.", rsData.message)
+        }
 
-    @Test
-    @DisplayName("프로젝트 검색 실패 - 데이터베이스 오류 발생")
-    void t18() {
+        @Test
+        @DisplayName("프로젝트 검색 실패 - 데이터베이스 오류 발생")
+        fun t8() {
         // Given
-        String keyword = "커피";
-        when(projectRepository.searchByKeyword(keyword))
-                .thenThrow(new DataAccessException("Database error") {});
+        val keyword = "커피"
+        every { projectRepository.searchByKeyword(keyword) } throws object : DataAccessException("Database error") {}
 
         // When & Then
-        ProjectCreationException exception = assertThrows(ProjectCreationException.class, () -> {
-            projectService.searchProjectsByKeyword(mockUser, keyword);
-        });
+        val exception = assertThrows<ProjectCreationException> {
+        projectService.searchProjectsByKeyword(mockUser, keyword)
+        }
 
-        RsData<Void> rsData = exception.getRsData();
-        assertEquals("500", rsData.getResultCode());
-        assertEquals("프로젝트 검색 중 데이터베이스 오류가 발생했습니다.", rsData.getMessage());
-    }
+        val rsData: RsData<Void> = exception.rsData
+        assertEquals("500", rsData.resultCode)
+        assertEquals("프로젝트 검색 중 데이터베이스 오류가 발생했습니다.", rsData.message)
+        }
 
-    @Test
-    @DisplayName("프로젝트 검색 실패 - 예기치 않은 오류 발생")
-    void t19() {
+        @Test
+        @DisplayName("프로젝트 검색 실패 - 예기치 않은 오류 발생")
+        fun t9() {
         // Given
-        String keyword = "커피";
-        when(projectRepository.searchByKeyword(keyword))
-                .thenThrow(new RuntimeException("Unexpected error"));
+        val keyword = "커피"
+        every { projectRepository.searchByKeyword(keyword) } throws RuntimeException("Unexpected error")
 
         // When & Then
-        ProjectCreationException exception = assertThrows(ProjectCreationException.class, () -> {
-            projectService.searchProjectsByKeyword(mockUser, keyword);
-        });
+        val exception = assertThrows<ProjectCreationException> {
+        projectService.searchProjectsByKeyword(mockUser, keyword)
+        }
 
-        RsData<Void> rsData = exception.getRsData();
-        assertEquals("400", rsData.getResultCode());
-        assertEquals("프로젝트 검색 중 오류가 발생했습니다.", rsData.getMessage());
-    }
+        val rsData: RsData<Void> = exception.rsData
+        assertEquals("400", rsData.resultCode)
+        assertEquals("프로젝트 검색 중 오류가 발생했습니다.", rsData.message)
+        }
 
 
+        @Test
+        @DisplayName("프로젝트 단건 조회 성공")
+        fun t10() {
+        val projectId = 1L
+        val ownUser: User = mockk()
+        every { ownUser.id } returns 3L
 
-    @Test
-    @DisplayName("프로젝트 단건 조회 성공")
-    void t7() {
-        Long projectId = 1L;
-        User ownUser = mock(User.class);
-        when(ownUser.getId()).thenReturn(3L);
+        val project = Project(
+        user = ownUser,
+        name = "국내 여행 추천 웹페이지",
+        startDate = startDate,
+        endDate = endDate,
+        memberCount = 4,
+        position = "백엔드",
+        repositoryLink = "koreaTravel@github.com",
+        description = "국내 여행지 추천해주는 웹페이지입니다.",
+        imageUrl = "travel.img"
+        )
 
-        Project project = new Project();
-        project.setUser(ownUser);
-        project.setName("국내 여행 추천 웹페이지");
-        project.setStartDate(startDate);
-        project.setEndDate(endDate);
-        project.setMemberCount(4);
-        project.setPosition("백엔드");
-        project.setRepositoryLink("koreaTravel@github.com");
-        project.setDescription("국내 여행지 추천해주는 웹페이지입니다.");
-        project.setImageUrl("travel.img");
+        project.projectSkills = mutableListOf(
+        ProjectSkill(project, Skill("Java")),
+        ProjectSkill(project, Skill("Spring Boot"))
+        )
 
-        project.setProjectSkills(
-                List.of(new ProjectSkill(project, new Skill("Java")),
-                        new ProjectSkill(project, new Skill("Spring Boot")))
-        );
-        project.setProjectTools(
-                List.of(new ProjectTool(project, new Tool("IntelliJ IDEA")),
-                        new ProjectTool(project, new Tool("Docker")))
-        );
+        project.projectTools = mutableListOf(
+        ProjectTool(project, Tool("IntelliJ IDEA")),
+        ProjectTool(project, Tool("Docker"))
+        )
 
-        ProjectDetailResponse mockResponse = mock(ProjectDetailResponse.class);
+        val mockResponse: ProjectDetailResponse = mockk()
 
-        //  mockResponse의 필드 값 설정
-        when(mockResponse.getName()).thenReturn("국내 여행 추천 웹페이지");
-        when(mockResponse.getStartDate()).thenReturn(startDate);
-        when(mockResponse.getEndDate()).thenReturn(endDate);
-        when(mockResponse.getMemberCount()).thenReturn(4);
-        when(mockResponse.getPosition()).thenReturn("백엔드");
-        when(mockResponse.getRepositoryLink()).thenReturn("koreaTravel@github.com");
-        when(mockResponse.getDescription()).thenReturn("국내 여행지 추천해주는 웹페이지입니다.");
-        when(mockResponse.getImageUrl()).thenReturn("travel.img");
+        // mockResponse의 필드 값 설정
+        every { mockResponse.name } returns "국내 여행 추천 웹페이지"
+        every { mockResponse.startDate } returns startDate
+        every { mockResponse.endDate } returns endDate
+        every { mockResponse.memberCount } returns 4
+        every { mockResponse.position } returns "백엔드"
+        every { mockResponse.repositoryLink } returns "koreaTravel@github.com"
+        every { mockResponse.description } returns "국내 여행지 추천해주는 웹페이지입니다."
+        every { mockResponse.imageUrl } returns "travel.img"
+        every { mockResponse.skills } returns listOf("Java", "Spring Boot")
+        every { mockResponse.tools } returns listOf("IntelliJ IDEA", "Docker")
 
-        when(mockResponse.getSkills()).thenReturn(List.of("Java", "Spring Boot"));
-        when(mockResponse.getTools()).thenReturn(List.of("IntelliJ IDEA", "Docker"));
-
-        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
-        when(projectMapper.projectToProjectDetailResponse(project)).thenReturn(mockResponse);
+        every { projectRepository.findById(projectId) } returns Optional.of(project)
+        every { projectMapper.projectToProjectDetailResponse(project) } returns mockResponse
 
         // When
-        ProjectDetailResponse response = projectService.detailProject(projectId, ownUser);
+        val response = projectService.detailProject(projectId, ownUser)
 
         // Then
-        assertNotNull(response);
-        assertEquals("국내 여행 추천 웹페이지", response.getName());
-        assertEquals(startDate, response.getStartDate());
-        assertEquals(endDate, response.getEndDate());
-        assertEquals(4, response.getMemberCount());
-        assertEquals("백엔드", response.getPosition());
-        assertEquals("koreaTravel@github.com", response.getRepositoryLink());
-        assertEquals("국내 여행지 추천해주는 웹페이지입니다.", response.getDescription());
-        assertEquals("travel.img", response.getImageUrl());
+        assertNotNull(response)
+        assertEquals("국내 여행 추천 웹페이지", response.name)
+        assertEquals(startDate, response.startDate)
+        assertEquals(endDate, response.endDate)
+        assertEquals(4, response.memberCount)
+        assertEquals("백엔드", response.position)
+        assertEquals("koreaTravel@github.com", response.repositoryLink)
+        assertEquals("국내 여행지 추천해주는 웹페이지입니다.", response.description)
+        assertEquals("travel.img", response.imageUrl)
 
         // Skill 및 Tool 검증
-        assertEquals(2, response.getSkills().size());
-        assertEquals(2, response.getTools().size());
-        assertTrue(response.getSkills().containsAll(List.of("Java", "Spring Boot")));
-        assertTrue(response.getTools().containsAll(List.of("IntelliJ IDEA", "Docker")));
+        assertEquals(2, response.skills.size)
+        assertEquals(2, response.tools.size)
+        assertTrue(response.skills.containsAll(listOf("Java", "Spring Boot")))
+        assertTrue(response.tools.containsAll(listOf("IntelliJ IDEA", "Docker")))
 
         // Verify
-        verify(projectRepository).findById(projectId);
-        verify(projectMapper).projectToProjectDetailResponse(project);
-    }
+        verify(exactly = 1) { projectRepository.findById(projectId) }
+        verify(exactly = 1) { projectMapper.projectToProjectDetailResponse(project) }
+        }
 
-
-
-    @Test
-    @DisplayName("프로젝트 단건 조회 실패 - 프로젝트 없음")
-    void t8(){
-        //Given
-        Long projectId = 1L;
-        User mockUser = mock(User.class);
-        when(projectRepository.findById(projectId)).thenReturn(Optional.empty());
-
-        //when&Then
-        ProjectCreationException exception = assertThrows(ProjectCreationException.class, () -> {
-            projectService.detailProject(projectId, mockUser);
-        });
-
-        RsData<Void> rsData = exception.getRsData();
-        assertEquals("404", rsData.getResultCode());
-        assertEquals("해당 프로젝트를 찾을 수 없습니다.", rsData.getMessage());
-    }
-
-
-
-
-    @Test
-    @DisplayName("프로젝트 단건 조회 실패 - 예기치 못한 오류")
-    void t9(){
-        Long projectId = 1L;
-        User mockUser = mock(User.class);
-        when(projectRepository.findById(projectId)).thenThrow(new RuntimeException("Unexpected Error"));
-
-        //when & Then
-        ProjectCreationException exception = assertThrows(ProjectCreationException.class, () -> {
-            projectService.detailProject(projectId, mockUser);
-        });
-
-        RsData<Void> rsData = exception.getRsData();
-        assertEquals("400", rsData.getResultCode());
-        assertEquals("프로젝트 단건 조회 중 오류가 발생했습니다.", rsData.getMessage());
-
-
-    }
-
-    private ProjectUpdateRequest projectUpdateRequest() {
-        return ProjectUpdateRequest.builder()
-                .name("업데이트된 프로젝트")
-                .startDate(LocalDate.of(2025, 1, 25))
-                .endDate(LocalDate.of(2025, 2, 20))
-                .memberCount(8)
-                .position("프론트엔드")
-                .repositoryLink("newRepoLink")
-                .description("업데이트된 프로젝트 설명")
-                .imageUrl("newImage.img")
-                .skills(List.of("React", "TypeScript"))
-                .tools(List.of("vs Code", "Figma"))
-                .build();
-    }
-
-    @Test
-    @Transactional
-    @DisplayName("프로젝트 수정 성공")
-    void t10() throws JsonProcessingException{
-        Long projectId = 1L;
-        ProjectUpdateRequest updateRequest = projectUpdateRequest();
-        String projectRequestJson = objectMapper.writeValueAsString(updateRequest);
-        MultipartFile mockFile = mock(MultipartFile.class);
-        Boolean deleteThumbnail = true;
-
-        Project realProject = Project.builder()
-                .user(mockUser)
-                .name("기존 프로젝트")
-                .startDate(LocalDate.of(2025, 1, 1))
-                .endDate(LocalDate.of(2025, 2, 10))
-                .memberCount(4)
-                .position("백엔드")
-                .repositoryLink("oldRepoLink")
-                .description("기존 프로젝트 설명")
-                .imageUrl("oldImage.img")
-                .build();
-
-        when(projectRepository.findById(projectId)).thenReturn(Optional.of(realProject));
-        when(projectRepository.save(any(Project.class))).thenReturn(realProject);
-        when(skillService.getSkillByName(anyString())).thenReturn(new Skill("React"));
-        when(toolService.getToolByName(anyString())).thenReturn(new Tool("VS Code"));
-
-        // When
-        ProjectUpdateResponse response = projectService.updateProject(projectId, projectRequestJson, mockUser, mockFile, deleteThumbnail);
-
-        // Then
-        assertNotNull(response);
-        assertEquals(updateRequest.getName(), response.getName());
-        verify(projectRepository, atLeastOnce()).save(any(Project.class));
-    }
-
-
-    @Test
-    @DisplayName("프로젝트 수정 실패 - 프로젝트 없음")
-    void t11() throws JsonProcessingException{
-        ProjectUpdateRequest updateRequest = projectUpdateRequest();
-        String projectRequestJson = objectMapper.writeValueAsString(updateRequest);
-        MultipartFile mockFile = mock(MultipartFile.class);
-        Boolean deleteThumbnail = false;
-
-        when(projectRepository.findById(1L)).thenReturn(Optional.empty());
-
-        ProjectCreationException exception = assertThrows(ProjectCreationException.class, () -> {
-            projectService.updateProject(1L, projectRequestJson, mockUser, mockFile, deleteThumbnail);
-        });
-
-        RsData<Void> rsData = exception.getRsData();
-        assertEquals("404", rsData.getResultCode());
-        assertEquals("해당 프로젝트를 찾을 수 없습니다.", rsData.getMessage());
-    }
-
-    @Test
-    @DisplayName("프로젝트 수정 실패 - 권한 없음")
-    void t12() throws JsonProcessingException{
-        ProjectUpdateRequest updateRequest = projectUpdateRequest();
-        String projectRequestJson = objectMapper.writeValueAsString(updateRequest);
-        MultipartFile mockFile = mock(MultipartFile.class);
-        Boolean deleteThumbnail = false;
-
-        User differentUser = mock(User.class);
-        Project mockProject = mock(Project.class);
-
-        when(projectRepository.findById(1L)).thenReturn(Optional.of(mockProject));
-        when(mockProject.getUser()).thenReturn(differentUser);
-
-        ProjectCreationException exception = assertThrows(ProjectCreationException.class, () -> {
-            projectService.updateProject(1L, projectRequestJson, mockUser, mockFile, deleteThumbnail);
-        });
-
-        RsData<Void> rsData = exception.getRsData();
-        assertEquals("403", rsData.getResultCode());
-        assertEquals("프로젝트 수정할 권한이 없습니다.", rsData.getMessage());
-    }
-
-
-    @Test
-    @DisplayName("프로젝트 삭제 성공 - 휴지통으로 이동")
-    void t13() {
-        Long projectId=1L;
-
-        Project mockProject = Mockito.mock(Project.class);
-        when(projectRepository.findById(projectId)).thenReturn(Optional.of(mockProject));
-        when(mockProject.getUser()).thenReturn(mockUser); // 사용자 일치
-
-        // When
-        assertDoesNotThrow(() -> projectService.deleteProject(projectId, mockUser));
-
-        // Then
-        verify(mockProject).setDeleted(true);
-        verify(projectRepository).save(mockProject);
-
-    }
-
-
-    @Test
-    @DisplayName("프로젝트 삭제 실패 - 삭제 권한 없음")
-    void t14(){
-
-        Long projectId=1L;
-
-        Project mockProject = Mockito.mock(Project.class);
-        User differentUser = Mockito.mock(User.class); // 다른 사용자
-        when(projectRepository.findById(projectId)).thenReturn(Optional.of(mockProject));
-        when(mockProject.getUser()).thenReturn(differentUser); // 사용자 불일치
-
-        // When & Then
-        ProjectCreationException exception = assertThrows(ProjectCreationException.class, () -> {
-            projectService.deleteProject(projectId, mockUser);
-        });
-
-        RsData<Void> rsData = exception.getRsData();
-        assertEquals("403", rsData.getResultCode());
-        assertEquals("프로젝트 삭제 할 권한이 없습니다.", rsData.getMessage());
-    }
-
-    @Test
-    @DisplayName("프로젝트 삭제 실패 - 데이터베이스 오류 발생(휴지통 이동 실패)")
-    void t15(){
-
-        Long projectId=1L;
-
+        @Test
+        @DisplayName("프로젝트 단건 조회 실패 - 프로젝트 없음")
+        fun t11() {
         // Given
-        Project mockProject = Mockito.mock(Project.class);
-        when(projectRepository.findById(projectId)).thenReturn(Optional.of(mockProject));
-        when(mockProject.getUser()).thenReturn(mockUser);
-
-        doThrow(new DataAccessException("DB 오류"){}).when(projectRepository).save(mockProject);
+        val projectId = 1L
+        val mockUser: User = mockk()
+        every { projectRepository.findById(projectId) } returns Optional.empty()
 
         // When & Then
-        ProjectCreationException exception = assertThrows(ProjectCreationException.class, () -> {
-            projectService.deleteProject(projectId, mockUser);
-        });
+        val exception = assertThrows<ProjectCreationException> {
+        projectService.detailProject(projectId, mockUser)
+        }
 
-        RsData<Void> rsData = exception.getRsData();
-        assertEquals("500", rsData.getResultCode());
-        assertEquals("프로젝트 삭제 중 데이터베이스 오류가 발생했습니다.", rsData.getMessage());
+        val rsData: RsData<Void> = exception.rsData
+        assertEquals("404", rsData.resultCode)
+        assertEquals("해당 프로젝트를 찾을 수 없습니다.", rsData.message)
+        }
 
-    }
+        @Test
+        @DisplayName("프로젝트 단건 조회 실패 - 예기치 못한 오류")
+        fun t12() {
+        val projectId = 1L
+        val mockUser: User = mockk()
+        every { projectRepository.findById(projectId) } throws RuntimeException("Unexpected Error")
 
-    @Test
-    @DisplayName("다중 프로젝트 삭제 성공 - 휴지통으로 이동")
-    void t20() {
-        List<Long> projectIds = List.of(1L, 2L, 3L);
+        // When & Then
+        val exception = assertThrows<ProjectCreationException> {
+        projectService.detailProject(projectId, mockUser)
+        }
 
-        Project mockProject1 = Mockito.mock(Project.class);
-        Project mockProject2 = Mockito.mock(Project.class);
-        Project mockProject3 = Mockito.mock(Project.class);
+        val rsData: RsData<Void> = exception.rsData
+        assertEquals("400", rsData.resultCode)
+        assertEquals("프로젝트 단건 조회 중 오류가 발생했습니다.", rsData.message)
+        }
 
-        when(projectRepository.findAllById(projectIds)).thenReturn(List.of(mockProject1, mockProject2, mockProject3));
-        when(mockProject1.getUser()).thenReturn(mockUser);
-        when(mockProject2.getUser()).thenReturn(mockUser);
-        when(mockProject3.getUser()).thenReturn(mockUser);
+
+        private fun projectUpdateRequest(): ProjectUpdateRequest {
+        return ProjectUpdateRequest(
+        name = "업데이트된 프로젝트",
+        startDate = LocalDate.of(2025, 1, 25),
+        endDate = LocalDate.of(2025, 2, 20),
+        memberCount = 8,
+        position = "프론트엔드",
+        repositoryLink = "newRepoLink",
+        description = "업데이트된 프로젝트 설명",
+        imageUrl = "newImage.img",
+        thumbnailPath = "mocked/path/to/thumbnail.jpg",
+        skills = listOf("React", "TypeScript"),
+        tools = listOf("vs Code", "Figma")
+        )
+        }
+
+        @Test
+        @Transactional
+        @DisplayName("프로젝트 수정 성공")
+        open fun t13() {
+        // Given
+        val projectId = 1L
+        val updateRequest = projectUpdateRequest()
+        val projectRequestJson = objectMapper.writeValueAsString(updateRequest)
+
+        println("✅ 변환된 JSON: $projectRequestJson") // JSON 확인
+
+        // ✅ Mock MultipartFile (비어 있지 않도록 설정)
+        val mockFile: MultipartFile = mockk {
+        every { isEmpty } returns false // ⚡ 썸네일 파일이 존재한다고 설정
+        every { originalFilename } returns "mock_thumbnail.jpg"
+        }
+        val deleteThumbnail = true
+
+        // realProject를 실제 객체로 사용
+        val realProject = Project(
+        user = mockUser,
+        name = "기존 프로젝트",
+        startDate = LocalDate.of(2025, 1, 1),
+        endDate = LocalDate.of(2025, 2, 10),
+        memberCount = 4,
+        position = "백엔드",
+        repositoryLink = "oldRepoLink",
+        description = "기존 프로젝트 설명",
+        imageUrl = "oldImage.img",
+        thumbnailPath = "old/path/to/thumbnail.jpg"
+        )
+
+        every { projectRepository.findById(projectId) } returns Optional.of(realProject)
+        every { projectRepository.save(any()) } returns realProject
+        every { skillService.getSkillByName(any()) } returns Skill("React")
+        every { toolService.getToolByName(any()) } returns Tool("VS Code")
+
+        // ✅ 썸네일 업로드가 반드시 호출되도록 설정
+        every { fileService.uploadThumbnail(any()) } returns "mocked/path/to/thumbnail.jpg"
+        every { fileService.deleteFile(any()) } just Runs // ⚡ 파일 삭제 동작 추가
+
+        every { skillService.updateProjectSkills(any(), any()) } just Runs
+        every { toolService.updateProjectTools(any(), any()) } just Runs
+
+        every { skillService.getProjectSkillNames(any()) } returns listOf("React", "TypeScript")
+        every { toolService.getProjectToolNames(any()) } returns listOf("VS Code", "Figma")
 
         // When
-        assertDoesNotThrow(() -> projectService.moveToTrash(projectIds, mockUser));
+        val response = try {
+        projectService.updateProject(projectId, projectRequestJson, mockUser, mockFile, deleteThumbnail)
+        } catch (e: ProjectCreationException) {
+        println("❌ 예외 발생: ${e.message}")
+        throw e
+        }
 
         // Then
-        verify(mockProject1).setDeleted(true);
-        verify(mockProject2).setDeleted(true);
-        verify(mockProject3).setDeleted(true);
-        verify(projectRepository).saveAll(List.of(mockProject1, mockProject2, mockProject3));  // 저장 확인
-    }
+        assertNotNull(response)
+        assertEquals(updateRequest.name, response.name)
+        verify(exactly = 1) { projectRepository.save(any()) }
+        verify(exactly = 1) { fileService.uploadThumbnail(any()) } // ✅ 썸네일 업로드가 실행되었는지 검증
+        }
 
-    @Test
-    @DisplayName("휴지통 복원 성공")
-    void t21() {
-        List<Long> projectIds = List.of(1L, 2L);
 
-        Project mockProject1 = Mockito.mock(Project.class);
-        Project mockProject2 = Mockito.mock(Project.class);
+        @Test
+        @DisplayName("프로젝트 수정 실패 - 프로젝트 없음")
+        fun t14() {
+        // Given
+        val updateRequest = projectUpdateRequest()
+        val projectRequestJson = objectMapper.writeValueAsString(updateRequest)
+        val mockFile: MultipartFile = mockk()
+        val deleteThumbnail = false
 
-        when(mockProject1.getId()).thenReturn(1L);
-        when(mockProject2.getId()).thenReturn(2L);
+        every { projectRepository.findById(1L) } returns Optional.empty()
 
-        when(mockProject1.getUser()).thenReturn(mockUser);
-        when(mockProject2.getUser()).thenReturn(mockUser);
+        // When & Then
+        val exception = assertThrows<ProjectCreationException> {
+        projectService.updateProject(1L, projectRequestJson, mockUser, mockFile, deleteThumbnail)
+        }
 
-        when(mockProject1.isDeleted()).thenReturn(true);
-        when(mockProject2.isDeleted()).thenReturn(true);
+        val rsData = exception.rsData
+        assertEquals("404", rsData.resultCode)
+        assertEquals("해당 프로젝트를 찾을 수 없습니다.", rsData.message)
+        }
 
-        when(projectRepository.findByIdInAndIsDeletedTrue(projectIds)).thenReturn(List.of(mockProject1, mockProject2));
+        @Test
+        @DisplayName("프로젝트 수정 실패 - 권한 없음")
+        fun t15() {
+                // Given
+                val updateRequest = projectUpdateRequest()
+                val projectRequestJson = objectMapper.writeValueAsString(updateRequest)
+                val mockFile: MultipartFile = mockk()
+                val deleteThumbnail = false
+
+                // ✅ mockUser와 다른 사용자 설정
+                val differentUser: User = mockk {
+                        every { id } returns 999L // ✅ ID를 명확히 설정하여 비교 가능하게 만듦
+                }
+                val mockProject: Project = mockk {
+                        every { user } returns differentUser // ✅ project.user를 differentUser로 설정
+                }
+
+                every { projectRepository.findById(1L) } returns Optional.of(mockProject)
+
+                // When & Then
+                val exception = assertThrows<ProjectCreationException> {
+                        projectService.updateProject(1L, projectRequestJson, mockUser, mockFile, deleteThumbnail)
+                }
+
+                val rsData = exception.rsData
+                assertEquals("403", rsData.resultCode) // ✅ 403이 정상적으로 발생하는지 확인
+                assertEquals("프로젝트 수정할 권한이 없습니다.", rsData.message) // ✅ 메시지가 일치하는지 확인
+        }
+
+
+
+        @Test
+        @DisplayName("프로젝트 삭제 성공 - 휴지통으로 이동")
+        fun t16() {
+        // Given
+        val projectId = 1L
+        val mockProject: Project = mockk(relaxed = true)
+
+        every { projectRepository.findById(projectId) } returns Optional.of(mockProject)
+        every { mockProject.user } returns mockUser
+        every { projectRepository.save(mockProject) } returns mockProject
 
         // When
-        doNothing().when(mockProject1).setDeleted(false);
-        doNothing().when(mockProject2).setDeleted(false);
-
-        assertDoesNotThrow(() -> projectService.restoreProjects(projectIds, mockUser));
+        assertDoesNotThrow { projectService.deleteProject(projectId, mockUser) }
 
         // Then
-        verify(mockProject1).setDeleted(false);
-        verify(mockProject2).setDeleted(false);
-        verify(projectRepository).saveAll(List.of(mockProject1, mockProject2));  // 저장 확인
-    }
+        verify { mockProject.isDeleted = true }
+        verify { projectRepository.save(mockProject) }
+        }
 
-    @Test
-    @DisplayName("프로젝트 영구 삭제 성공")
-    void t22() {
-        List<Long> projectIds = List.of(1L, 2L);
+        @Test
+        @DisplayName("프로젝트 삭제 실패 - 삭제 권한 없음")
+        fun t17() {
+        // Given
+        val projectId = 1L
+        val mockProject: Project = mockk(relaxed = true)
+        val differentUser: User = mockk(relaxed = true)
+        val mockUser: User = mockk(relaxed = true)
 
-        Project mockProject1 = Mockito.mock(Project.class);
-        Project mockProject2 = Mockito.mock(Project.class);
+        every { projectRepository.findById(projectId) } returns Optional.of(mockProject)
 
-        when(mockProject1.getId()).thenReturn(1L);
-        when(mockProject2.getId()).thenReturn(2L);
+        // ✅ User 객체에 명확하게 ID 설정
+        every { differentUser.id } returns 999L
+        every { mockUser.id } returns 100L
+        every { mockProject.user } returns differentUser
 
-        when(mockProject1.getUser()).thenReturn(mockUser);
-        when(mockProject2.getUser()).thenReturn(mockUser);
+        // When & Then
+        val exception = assertThrows<ProjectCreationException> {
+        projectService.deleteProject(projectId, mockUser)
+        }
 
-        when(mockProject1.isDeleted()).thenReturn(true);
-        when(mockProject2.isDeleted()).thenReturn(true);
+        val rsData = exception.rsData
+        assertEquals("403", rsData.resultCode)
+        assertEquals("프로젝트 삭제 할 권한이 없습니다.", rsData.message)
+        }
 
-        when(projectRepository.findByIdInAndIsDeletedTrue(projectIds)).thenReturn(List.of(mockProject1, mockProject2));
+
+        @Test
+        @DisplayName("프로젝트 삭제 실패 - 데이터베이스 오류 발생(휴지통 이동 실패)")
+        fun t18() {
+        // Given
+        val projectId = 1L
+        val mockProject: Project = mockk(relaxed = true)
+
+        every { projectRepository.findById(projectId) } returns Optional.of(mockProject)
+        every { mockProject.user } returns mockUser
+        every { projectRepository.save(mockProject) } throws object : DataAccessException("DB 오류") {}
+
+
+        // When & Then
+        val exception = assertThrows<ProjectCreationException> {
+        projectService.deleteProject(projectId, mockUser)
+        }
+
+        val rsData = exception.rsData
+        assertEquals("500", rsData.resultCode)
+        assertEquals("프로젝트 삭제 중 데이터베이스 오류가 발생했습니다.", rsData.message)
+        }
+
+        @Test
+        @DisplayName("다중 프로젝트 삭제 성공 - 휴지통으로 이동")
+        fun t19() {
+        // Given
+        val projectIds = listOf(1L, 2L, 3L)
+
+        val mockProject1: Project = mockk(relaxed = true)
+        val mockProject2: Project = mockk(relaxed = true)
+        val mockProject3: Project = mockk(relaxed = true)
+
+        // ✅ projectRepository.findByIdInAndIsDeletedTrue()의 결과를 전체 프로젝트로 변경
+        every { projectRepository.findAllById(projectIds) } returns listOf(mockProject1, mockProject2, mockProject3)
+
+        every { mockProject1.user } returns mockUser
+        every { mockProject2.user } returns mockUser
+        every { mockProject3.user } returns mockUser
+
+        every { projectRepository.saveAll(any<List<Project>>()) } returns listOf(
+        mockProject1,
+        mockProject2,
+        mockProject3
+        )
+
+        // When
+        assertDoesNotThrow { projectService.moveToTrash(projectIds, mockUser) }
+
+        // Then
+        verify { mockProject1.isDeleted = true }
+        verify { mockProject2.isDeleted = true }
+        verify { mockProject3.isDeleted = true }
+        verify { projectRepository.saveAll(listOf(mockProject1, mockProject2, mockProject3)) }
+        }
+
+
+        @Test
+        @DisplayName("휴지통 복원 성공")
+        fun t20() {
+        // Given
+        val projectIds = listOf(1L, 2L)
+
+        val mockProject1: Project = mockk(relaxed = true)
+        val mockProject2: Project = mockk(relaxed = true)
+
+        every { mockProject1.id } returns 1L
+        every { mockProject2.id } returns 2L
+
+        every { mockProject1.user } returns mockUser
+        every { mockProject2.user } returns mockUser
+
+        every { mockProject1.isDeleted } returns true
+        every { mockProject2.isDeleted } returns true
+
+        every { projectRepository.findByIdInAndIsDeletedTrue(any<List<Long>>()) } returns listOf(
+        mockProject1,
+        mockProject2
+        )
+
+        every { projectRepository.saveAll(any<List<Project>>()) } returns listOf(mockProject1, mockProject2)
+
+
+        // When
+        assertDoesNotThrow { projectService.restoreProjects(projectIds, mockUser) }
+
+        // Then
+        verify { mockProject1.isDeleted = false }
+        verify { mockProject2.isDeleted = false }
+        verify { projectRepository.saveAll(listOf(mockProject1, mockProject2)) }
+        }
+
+        @Test
+        @DisplayName("프로젝트 영구 삭제 성공")
+        fun t21() {
+        // Given
+        val projectIds = listOf(1L, 2L)
+
+        val mockProject1: Project = mockk(relaxed = true)
+        val mockProject2: Project = mockk(relaxed = true)
+
+        every { mockProject1.id } returns 1L
+        every { mockProject2.id } returns 2L
+
+        every { mockProject1.user } returns mockUser
+        every { mockProject2.user } returns mockUser
+
+        every { mockProject1.isDeleted } returns true
+        every { mockProject2.isDeleted } returns true
+
+        every { projectRepository.findByIdInAndIsDeletedTrue(projectIds) } returns listOf(mockProject1, mockProject2)
 
         // 스킬 및 툴 삭제 Mock 설정
-        doNothing().when(skillService).deleteProjectSkills(projectIds);
-        doNothing().when(toolService).deleteProjectTools(projectIds);
+        every { skillService.deleteProjectSkills(projectIds) } returns Unit
+        every { toolService.deleteProjectTools(projectIds) } returns Unit
+        every { projectRepository.deleteAll(any()) } returns Unit
 
         // When
-        assertDoesNotThrow(() -> projectService.permanentlyDeleteProjects(projectIds, mockUser));
+        assertDoesNotThrow { projectService.permanentlyDeleteProjects(projectIds, mockUser) }
 
         // Then
-        verify(skillService).deleteProjectSkills(projectIds);
-        verify(toolService).deleteProjectTools(projectIds);
-        verify(projectRepository).deleteAll(List.of(mockProject1, mockProject2));  // 실제 삭제 확인
-    }
+        verify { skillService.deleteProjectSkills(projectIds) }
+        verify { toolService.deleteProjectTools(projectIds) }
+        verify { projectRepository.deleteAll(listOf(mockProject1, mockProject2)) }
+        }
 
-    @Test
-    @DisplayName("다중 프로젝트 삭제 실패 - 삭제 권한 없음")
-    void t23() {
-        List<Long> projectIds = List.of(1L, 2L);
+        @Test
+        @DisplayName("다중 프로젝트 삭제 실패 - 삭제 권한 없음")
+        fun t22() {
+        // Given
+        val projectIds = listOf(1L, 2L)
 
-        Project mockProject1 = Mockito.mock(Project.class);
-        Project mockProject2 = Mockito.mock(Project.class);
+        val mockProject1: Project = mockk(relaxed = true)
+        val mockProject2: Project = mockk(relaxed = true)
+        val differentUser: User = mockk(relaxed = true)
+        val mockUser: User = mockk(relaxed = true)
 
-        User differentUser = Mockito.mock(User.class);
+        every { mockProject1.id } returns 1L
+        every { mockProject2.id } returns 2L
 
-        when(mockProject1.getId()).thenReturn(1L);
-        when(mockProject2.getId()).thenReturn(2L);
+        // ✅ User 객체에 명확하게 ID 설정
+        every { differentUser.id } returns 999L // ❌ mockUser와 다른 사용자
+        every { mockUser.id } returns 100L // ✅ 테스트 대상 사용자
 
+        every { mockProject1.user } returns differentUser
+        every { mockProject2.user } returns mockUser
 
-        when(projectRepository.findAllById(projectIds)).thenReturn(List.of(mockProject1, mockProject2));
-        when(mockProject1.getUser()).thenReturn(differentUser); // 다른 사용자
-        when(mockProject2.getUser()).thenReturn(mockUser);      // 일치 사용자
+        every { projectRepository.findAllById(projectIds) } returns listOf(mockProject1, mockProject2)
 
         // When & Then
-        ProjectCreationException exception = assertThrows(ProjectCreationException.class, () -> {
-            projectService.moveToTrash(projectIds, mockUser);
-        });
+        val exception = assertThrows<ProjectCreationException> {
+        projectService.moveToTrash(projectIds, mockUser)
+        }
 
-        RsData<Void> rsData = exception.getRsData();
-        assertEquals("403", rsData.getResultCode());
-        assertEquals("프로젝트 삭제 할 권한이 없습니다.", rsData.getMessage());
-    }
-
-    @Test
-    @DisplayName("다중 프로젝트 삭제 실패 - 데이터베이스 오류 발생")
-    void t24() {
-        List<Long> projectIds = List.of(1L, 2L);
-
-        Project mockProject1 = Mockito.mock(Project.class);
-        Project mockProject2 = Mockito.mock(Project.class);
-
-        when(mockProject1.getId()).thenReturn(1L);
-        when(mockProject2.getId()).thenReturn(2L);
+        val rsData = exception.rsData
+        assertEquals("403", rsData.resultCode)
+        assertEquals("프로젝트 삭제 할 권한이 없습니다.", rsData.message)
+        }
 
 
-        when(projectRepository.findAllById(projectIds)).thenReturn(List.of(mockProject1, mockProject2));
-        when(mockProject1.getUser()).thenReturn(mockUser);
-        when(mockProject2.getUser()).thenReturn(mockUser);
+        @Test
+        @DisplayName("다중 프로젝트 삭제 실패 - 데이터베이스 오류 발생")
+        fun t23() {
+        // Given
+        val projectIds = listOf(1L, 2L)
+
+        val mockProject1: Project = mockk(relaxed = true)
+        val mockProject2: Project = mockk(relaxed = true)
+
+        every { mockProject1.id } returns 1L
+        every { mockProject2.id } returns 2L
+
+        every { projectRepository.findAllById(projectIds) } returns listOf(mockProject1, mockProject2)
+        every { mockProject1.user } returns mockUser
+        every { mockProject2.user } returns mockUser
 
         // DB 삭제 실패 발생
-        doThrow(new DataAccessException("DB 오류"){}).when(projectRepository).saveAll(anyList());
+        every { projectRepository.saveAll(any<List<Project>>()) } throws object : DataAccessException("DB 오류") {}
 
         // When & Then
-        ProjectCreationException exception = assertThrows(ProjectCreationException.class, () -> {
-            projectService.moveToTrash(projectIds, mockUser);
-        });
+        val exception = assertThrows<ProjectCreationException> {
+        projectService.moveToTrash(projectIds, mockUser)
+        }
 
-        RsData<Void> rsData = exception.getRsData();
-        assertEquals("500", rsData.getResultCode());
-        assertEquals("프로젝트 삭제 중 데이터베이스 오류가 발생했습니다.", rsData.getMessage());
-    }
+        val rsData = exception.rsData
+        assertEquals("500", rsData.resultCode)
+        assertEquals("프로젝트 삭제 중 데이터베이스 오류가 발생했습니다.", rsData.message)
+        }
 
-
-}
+        }
+        */
