@@ -15,11 +15,6 @@ import java.util.List;
 @Builder
 public class Admin extends BaseTime {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Long id;
-
     @Column(name = "username", nullable = false)
     private String username;
 

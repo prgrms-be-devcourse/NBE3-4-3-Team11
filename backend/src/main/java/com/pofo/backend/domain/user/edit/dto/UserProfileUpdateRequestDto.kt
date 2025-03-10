@@ -1,21 +1,14 @@
-package com.pofo.backend.domain.user.edit.dto;
+package com.pofo.backend.domain.user.edit.dto
 
-import com.pofo.backend.domain.user.join.entity.User;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.pofo.backend.domain.user.join.entity.User
+import com.pofo.backend.domain.user.join.entity.User.UserStatus
 
-@Getter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class UserProfileUpdateRequestDto {
-    private String nickname;
-    private String jobInterest;
-    private String userStatus;
-
-    public User.UserStatus getUserStatusEnum() {
-        return User.UserStatus.valueOf(userStatus.toUpperCase());
+data class UserProfileUpdateRequestDto(
+    val nickname: String,
+    val jobInterest: String,
+    val userStatus: UserStatus
+) {
+    fun getUserStatusEnum(): UserStatus {
+        return User.UserStatus.valueOf(userStatus.name)
     }
 }
