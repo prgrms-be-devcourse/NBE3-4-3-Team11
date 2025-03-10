@@ -1,38 +1,21 @@
 package com.pofo.backend.domain.project.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import java.time.LocalDate
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+data class ProjectDetailResponse (
+    val projectId: Long,
+    val name: String,
+    val startDate: LocalDate,
+    val endDate: LocalDate,
+    val memberCount: Int,
+    val position: String,
+    val repositoryLink: String,
+    val description: String,
+    val imageUrl: String,
+    val thumbnailPath: String,
+    val skills: List<String> = emptyList(),
+    val tools: List<String> = emptyList(),
+    val isDeleted: Boolean
+)
 
-@Builder
-@AllArgsConstructor
-@Getter
-@Setter
-public class ProjectDetailResponse {
 
-    private Long projectId;
-    private String name;
-    private LocalDate startDate;
-    private LocalDate endDate;
-
-    private int memberCount;
-    private String position;
-    private String repositoryLink;
-    private String description;
-    private String imageUrl;
-    private String thumbnailPath;
-
-    // 기술 및 도구 목록 추가
-    @Builder.Default
-    private List<String> skills = new ArrayList<>();
-
-    @Builder.Default
-    private List<String> tools= new ArrayList<>();
-
-    private boolean isDeleted;
-}
