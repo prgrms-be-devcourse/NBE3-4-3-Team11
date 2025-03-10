@@ -49,7 +49,7 @@ class CommentService(
         val comment = commentRepository.findByInquiryIdAndId(inquiryId, commentId)
             .orElseThrow { CommentException("해당 댓글을 찾을 수 없습니다.") }
 
-        if (comment.user != user) {
+        if (comment.user.id != user.id) {
             throw CommentException("댓글을 수정할 권한이 없습니다.")
         }
 
@@ -67,7 +67,7 @@ class CommentService(
         val comment = commentRepository.findByInquiryIdAndId(inquiryId, commentId)
             .orElseThrow { CommentException("해당 댓글을 찾을 수 없습니다.") }
 
-        if (comment.user != user) {
+        if (comment.user.id != user.id) {
             throw UnauthorizedActionException("댓글을 수정할 권한이 없습니다.")
         }
 
@@ -81,15 +81,15 @@ class CommentService(
     @Transactional(readOnly = true)
     fun findByInquiryId(inquiryId: Long): List<CommentDetailResponse> {
         val comments = commentRepository.findByInquiryId(inquiryId)
-        return comments.map { CommentDetailResponse(it.id, it.content, it.createdAt) }
+        return comments.map { it.createdAt?.let { it1 -> CommentDetailResponse(it.id, it.content, it1) }!! }
     }
 
     @Transactional(readOnly = true)
-    fun findById(id: Long): CommentDetailResponse {
+    fun findById(id: Long): CommentDetailResponse? {
         val comment = commentRepository.findById(id)
             .orElseThrow { CommentException("해당 댓글을 찾을 수 없습니다.") }
 
-        return CommentDetailResponse(comment.id, comment.content, comment.createdAt)
+        return comment.createdAt?.let { CommentDetailResponse(comment.id, comment.content, it) }
     }
 
     @Transactional

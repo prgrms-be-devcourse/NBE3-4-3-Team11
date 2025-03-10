@@ -8,14 +8,15 @@ data class CommentDetailResponse(
     val content: String,
     val createdAt: LocalDateTime,
     val type: String = "comment"
-) {
-    companion object {
-        fun from(comment: Comment): CommentDetailResponse {
-            return CommentDetailResponse(
-                id = comment.id,
-                content = comment.content,
-                createdAt = comment.createdAt
-            )
-        }
-    }
-}
+)
+//{
+//    companion object {
+//        fun from(comment: Comment): CommentDetailResponse {
+//            return CommentDetailResponse(
+//                id = comment.id,
+//                content = comment.content,
+//                createdAt = comment.createdAt
+//            )
+//        }
+//    }
+//}
