@@ -53,30 +53,31 @@ public class User extends BaseEntity {
     // 관심 직종
     @Setter
     @Column(nullable = true)
-    private String jobInterest;
+    public String jobInterest;
 
     // 취업 상태
     @Setter
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
-    private UserStatus userStatus;
+    public UserStatus userStatus;
 
     // 휴먼 계정 여부 ("N" : 일반, "Y" : 휴먼)
     @Getter
     @Setter
     @Column(nullable = false, name = "dormant_flg", columnDefinition = "varchar(1) default 'N'")
-    private String dormantFlg = "N";
+    public String dormantFlg = "N";
+
     // 휴먼 처리 시작 시간
     @Setter
     @Column(name = "dormant_start_at")
-    private LocalDateTime dormantStartAt;
+    public LocalDateTime dormantStartAt;
 
 
 
     // 휴먼 처리 종료 시간 (해제 시 업데이트)
     @Setter
     @Column(name = "dormant_end_at")
-    private LocalDateTime dormantEndAt;
+    public LocalDateTime dormantEndAt;
 
     @Getter
     @AllArgsConstructor

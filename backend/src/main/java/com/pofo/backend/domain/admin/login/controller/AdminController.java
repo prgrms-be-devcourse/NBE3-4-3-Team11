@@ -1,7 +1,6 @@
 package com.pofo.backend.domain.admin.login.controller;
 
 import com.pofo.backend.common.rsData.RsData;
-import com.pofo.backend.domain.admin.login.entitiy.Admin;
 import com.pofo.backend.domain.admin.login.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

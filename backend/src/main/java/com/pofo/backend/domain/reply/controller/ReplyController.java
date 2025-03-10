@@ -2,7 +2,6 @@ package com.pofo.backend.domain.reply.controller;
 
 import com.pofo.backend.common.rsData.RsData;
 import com.pofo.backend.common.security.AdminDetails;
-import com.pofo.backend.domain.admin.login.entitiy.Admin;
 import com.pofo.backend.domain.reply.dto.request.ReplyCreateRequest;
 import com.pofo.backend.domain.reply.dto.request.ReplyUpdateRequest;
 import com.pofo.backend.domain.reply.dto.response.ReplyCreateResponse;

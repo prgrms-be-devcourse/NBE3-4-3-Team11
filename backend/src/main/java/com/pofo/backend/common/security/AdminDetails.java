@@ -1,6 +1,5 @@
 package com.pofo.backend.common.security;
 
-import com.pofo.backend.domain.admin.login.entitiy.Admin;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

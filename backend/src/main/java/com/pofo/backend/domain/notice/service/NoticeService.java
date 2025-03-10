@@ -1,6 +1,5 @@
 package com.pofo.backend.domain.notice.service;
 
-import com.pofo.backend.domain.admin.login.entitiy.Admin;
 import com.pofo.backend.domain.notice.dto.reponse.NoticeCreateResponse;
 import com.pofo.backend.domain.notice.dto.reponse.NoticeDetailResponse;
 import com.pofo.backend.domain.notice.dto.reponse.NoticeUpdateResponse;
