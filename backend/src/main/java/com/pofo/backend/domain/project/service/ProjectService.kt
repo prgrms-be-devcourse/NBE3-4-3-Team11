@@ -23,7 +23,6 @@ import org.springframework.dao.DataAccessException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
-import java.util.stream.Collectors
 
 @Service
 @Transactional
@@ -83,10 +82,10 @@ class ProjectService(
             projectRepository.save(project)
 
             // 기술 스택 & 사용 도구 저장
-            skillService.addProjectSkills(project.id!!, request.skills)
-            toolService.addProjectTools(project.id!!, request.tools)
+            skillService.addProjectSkills(project.id, request.skills)
+            toolService.addProjectTools(project.id, request.tools)
 
-            ProjectCreateResponse(project.id!!); // projectId 반환
+            ProjectCreateResponse(project.id!!) // projectId 반환
 
         } catch (ex: ProjectCreationException) {
             throw ex  // 이미 정의된 예외는 다시 던진다.
@@ -231,7 +230,7 @@ class ProjectService(
             // 기본 정보 업데이트
              request?.let {
                 project.updateBasicInfo(
-                        it.name,
+                    it.name,
                     it.startDate,
                     it.endDate,
                     it.memberCount,
@@ -261,8 +260,8 @@ class ProjectService(
                     project.description,
                     project.imageUrl,
                     project.thumbnailPath,
-                    skillService.getProjectSkillNames(project.id!!),
-                    toolService.getProjectToolNames(project.id!!),
+                    skillService.getProjectSkillNames(project.id),
+                    toolService.getProjectToolNames(project.id),
                     project.isDeleted
             );
 
@@ -322,9 +321,7 @@ class ProjectService(
     fun getDeletedProjects(user: User) : List<ProjectDetailResponse> {
         val deletedProjects = projectRepository.findByUserAndIsDeletedTrue(user)
 
-        return deletedProjects.stream()
-                .map(projectMapper::projectToProjectDetailResponse)
-                .collect(Collectors.toList());
+        return deletedProjects.map { projectMapper.projectToProjectDetailResponse(it) }
     }
 
     //요청된 프로젝트 ID 중에서, 휴지통에 있는 프로젝트만 조회하고 검증하는 메서드
