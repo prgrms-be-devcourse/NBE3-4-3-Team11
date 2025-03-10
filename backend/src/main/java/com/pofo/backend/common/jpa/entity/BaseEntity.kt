@@ -6,7 +6,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.MappedSuperclass
 
 @MappedSuperclass
-abstract class BaseEntity {
+open class BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null
