@@ -34,7 +34,7 @@ data class ProjectUpdateRequest (
     @field:NotBlank
     val imageUrl: String,
 
-    val thumbnailPath: String,
+    val thumbnailPath: String? =null,
 
     @field:NotEmpty
     val skills: List<String> = emptyList(),
@@ -42,5 +42,5 @@ data class ProjectUpdateRequest (
     @field:NotEmpty
     val tools: List<String> = emptyList(),
 
-    val isDeleted: Boolean
+    val isDeleted: Boolean = false
 )
