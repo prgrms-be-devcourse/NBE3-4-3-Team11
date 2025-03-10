@@ -2,6 +2,7 @@ package com.pofo.backend.domain.notice.controller;
 
 import com.pofo.backend.common.rsData.RsData;
 import com.pofo.backend.common.security.AdminDetails;
+import com.pofo.backend.domain.admin.login.entitiy.Admin;
 import com.pofo.backend.domain.notice.dto.reponse.NoticeCreateResponse;
 import com.pofo.backend.domain.notice.dto.reponse.NoticeUpdateResponse;
 import com.pofo.backend.domain.notice.dto.request.NoticeCreateRequest;

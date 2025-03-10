@@ -7,6 +7,7 @@ import com.pofo.backend.common.security.jwt.TokenProvider;
 import com.pofo.backend.domain.admin.login.dto.AdminLoginRequest;
 import com.pofo.backend.domain.admin.login.dto.AdminLoginResponse;
 import com.pofo.backend.domain.admin.login.dto.AdminLogoutResponse;
+import com.pofo.backend.domain.admin.login.entitiy.Admin;
 import com.pofo.backend.domain.admin.login.service.AdminService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

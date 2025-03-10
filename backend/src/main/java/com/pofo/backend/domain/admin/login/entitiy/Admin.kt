@@ -13,17 +13,17 @@ import lombok.*
 @Builder
 class Admin : BaseTime() {
     @Column(name = "username", nullable = false)
-     var username: String? = null
+    var username: String? = null
 
     @Column(name = "password", nullable = false)
-     var password: String? = null
+    var password: String? = null
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-     var status: Status? = null
+    var status: Status? = null
 
     @Column(name = "failure_count", nullable = false, columnDefinition = "int default 0")
-     var failureCount = 0
+    var failureCount = 0
 
     enum class Status {
         ACTIVE,

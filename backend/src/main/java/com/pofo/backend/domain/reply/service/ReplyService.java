@@ -1,5 +1,6 @@
 package com.pofo.backend.domain.reply.service;
 
+import com.pofo.backend.domain.admin.login.entitiy.Admin;
 import com.pofo.backend.domain.inquiry.entity.Inquiry;
 import com.pofo.backend.domain.inquiry.repository.InquiryRepository;
 import com.pofo.backend.domain.reply.dto.request.ReplyCreateRequest;
