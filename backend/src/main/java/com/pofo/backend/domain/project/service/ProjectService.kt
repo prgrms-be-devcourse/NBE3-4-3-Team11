@@ -118,20 +118,26 @@ class ProjectService(
             }
 
             // 사용자가 접근할 수 있는 프로젝트만 필터링 (본인 소유 또는 관리자)
-           val accessibleProjects = projects.filter{ it.user == user }
+           val accessibleProjects = projects.filter{ it.user?.id == user.id }
 
             // 사용자가 접근할 수 있는 프로젝트가 없으면 예외 발생
             if (accessibleProjects.isEmpty()) {
                 throw ProjectCreationException.forbidden("프로젝트 전체 조회 할 권한이 없습니다.")
             }
 
-            ArrayList(accessibleProjects.map {projectMapper.projectToProjectDetailResponse(it)})
+            // thumbnailPath가 없으면 imageUrl을 사용하여 매핑
+            accessibleProjects.map { project ->
+                projectMapper.projectToProjectDetailResponse(
+                    project.apply { thumbnailPath = thumbnailPath ?: imageUrl }
+                )
+            }
 
         } catch (ex: DataAccessException) {
             throw ProjectCreationException.serverError("프로젝트 전체 조회 중 데이터베이스 오류가 발생했습니다.")
         } catch (ex: ProjectCreationException) {
             throw ex  // 이미 정의된 예외는 다시 던진다.
         } catch (ex: Exception) {
+            ex.printStackTrace()
             throw ProjectCreationException.badRequest("프로젝트 전체 조회 중 오류가 발생했습니다.")
         }
     }
@@ -142,11 +148,13 @@ class ProjectService(
             val project = projectRepository.findById(projectId)
                     .orElseThrow{ ProjectCreationException.notFound("해당 프로젝트를 찾을 수 없습니다.") }
 
-            if (project.user != user) {
+            if (project.user?.id != user.id) {
                 throw ProjectCreationException.forbidden("프로젝트 단건 조회 할 권한이 없습니다.")
             }
 
-            projectMapper.projectToProjectDetailResponse(project)
+            // thumbnailPath가 없으면 imageUrl을 대신 사용
+            val thumbnail = project.thumbnailPath ?: project.imageUrl
+            projectMapper.projectToProjectDetailResponse(project.apply { thumbnailPath = thumbnail })
 
         } catch (ex: DataAccessException) {
             throw ProjectCreationException.serverError("프로젝트 단건 조회 중 데이터베이스 오류가 발생했습니다.")
@@ -164,7 +172,7 @@ class ProjectService(
             val projects = projectRepository.searchByKeyword(keyword)
 
             // 접근 권한 필터링 (자신의 프로젝트만 조회)
-           val accessibleProjects = projects.filter { it.user == user }
+           val accessibleProjects = projects.filter { it.user?.id == user.id }
 
             if (accessibleProjects.isEmpty()) {
                 throw ProjectCreationException.notFound("검색된 프로젝트가 없습니다.")
@@ -203,7 +211,7 @@ class ProjectService(
                 .orElseThrow { ProjectCreationException.notFound("해당 프로젝트를 찾을 수 없습니다.") }
 
             // 권한 확인
-            if (project.user != user) {
+            if (project.user?.id != user.id) {
                 throw ProjectCreationException.forbidden("프로젝트 수정할 권한이 없습니다.")
             }
 
@@ -286,6 +294,7 @@ class ProjectService(
         } catch (ex: ProjectCreationException) {
             throw ex
         } catch (ex: Exception) {
+            ex.printStackTrace()
             throw ProjectCreationException.serverError("프로젝트 수정 중 오류가 발생했습니다.")
         }
     }
@@ -296,7 +305,7 @@ class ProjectService(
             val project = projectRepository.findById(projectId)
                     .orElseThrow { ProjectCreationException.notFound("해당 프로젝트를 찾을 수 없습니다.") }
 
-            if (project.user != user) {
+            if (project.user?.id != user.id) {
                 throw ProjectCreationException.forbidden("프로젝트 삭제 할 권한이 없습니다.")
             }
 
@@ -319,7 +328,7 @@ class ProjectService(
             val projects = projectRepository.findAllById(projectIds)
 
             for (project in projects) {
-                if (project.user != user) {
+                if (project.user?.id != user.id) {
                     throw ProjectCreationException.forbidden("프로젝트 삭제 할 권한이 없습니다.")
                 }
                 project.isDeleted = true // 휴지통 이동
@@ -336,11 +345,20 @@ class ProjectService(
         }
     }
 
-    fun getDeletedProjects(user: User) : List<ProjectDetailResponse> {
-        val deletedProjects = projectRepository.findByUserAndIsDeletedTrue(user)
+    fun getDeletedProjects(user: User): List<ProjectDetailResponse> {
+        return try {
+            val deletedProjects = projectRepository.findByUserAndIsDeletedTrue(user)
 
-        return deletedProjects.map { projectMapper.projectToProjectDetailResponse(it) }
+            deletedProjects.map { projectMapper.projectToProjectDetailResponse(it) }
+        } catch (ex: DataAccessException) {
+            ex.printStackTrace()
+            throw ProjectCreationException.serverError("휴지통 목록 조회 중 데이터베이스 오류가 발생했습니다.")
+        } catch (ex: Exception) {
+            ex.printStackTrace()
+            throw ProjectCreationException.badRequest("휴지통 목록 조회 중 예기치 않은 오류가 발생했습니다.")
+        }
     }
+
 
     //요청된 프로젝트 ID 중에서, 휴지통에 있는 프로젝트만 조회하고 검증하는 메서드
     fun validateTrashProjects(projectIds: List<Long>): List<Project> {
