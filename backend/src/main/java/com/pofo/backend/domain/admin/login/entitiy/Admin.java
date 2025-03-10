@@ -1,10 +1,8 @@
 package com.pofo.backend.domain.admin.login.entitiy;
 
+import com.pofo.backend.common.jpa.entity.BaseTime;
 import jakarta.persistence.*;
 import lombok.*;
-import com.pofo.backend.common.jpa.entity.BaseTime;
-
-import java.util.List;
 
 @Entity
 @Table(name = "admins")
@@ -14,11 +12,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class Admin extends BaseTime {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Long id;
 
     @Column(name = "username", nullable = false)
     private String username;

@@ -19,11 +19,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public class AdminLoginHistory extends BaseTime {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Long id;
-
     @ManyToOne
     @JoinColumn(name = "admin_id", referencedColumnName = "id", nullable = false)
     private Admin admin; // admin_id 외래 키 필드

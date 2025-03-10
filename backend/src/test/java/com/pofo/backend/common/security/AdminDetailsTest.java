@@ -19,7 +19,6 @@ class AdminDetailsTest {
     @BeforeEach
     void setUp() {
         admin = Admin.builder()
-                .id(1L)
                 .username("admin")
                 .password("password123")
                 .status(Admin.Status.ACTIVE)
