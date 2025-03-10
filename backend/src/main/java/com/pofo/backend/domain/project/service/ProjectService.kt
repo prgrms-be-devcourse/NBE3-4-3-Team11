@@ -1,9 +1,13 @@
 package com.pofo.backend.domain.project.service;
 
+import com.fasterxml.jackson.annotation.JsonSetter
+import com.fasterxml.jackson.annotation.Nulls
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.pofo.backend.domain.mapper.ProjectMapper
 import com.pofo.backend.domain.project.dto.request.ProjectCreateRequest
 import com.pofo.backend.domain.project.dto.request.ProjectUpdateRequest
@@ -18,6 +22,7 @@ import com.pofo.backend.domain.skill.service.SkillService
 import com.pofo.backend.domain.tool.repository.ProjectToolRepository
 import com.pofo.backend.domain.tool.service.ToolService
 import com.pofo.backend.domain.user.join.entity.User
+import jakarta.validation.ConstraintViolationException
 import org.hibernate.query.sqm.tree.SqmNode.log
 import org.springframework.dao.DataAccessException
 import org.springframework.stereotype.Service
@@ -37,34 +42,33 @@ class ProjectService(
     private val fileService: FileService
 ) {
 
+    private val objectMapper = ObjectMapper().apply {
+        registerModule(JavaTimeModule())  // ✅ LocalDate 변환 지원
+        registerKotlinModule()  // ✅ Kotlin 기본값 처리 지원
+        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false) // 예상치 못한 필드 무시
+        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)  // ✅ LocalDate를 "yyyy-MM-dd" 형식으로 변환
+        setDefaultSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY))  // ✅ null이 들어오면 빈 값으로 처리
+    }
+
     fun createProject(user: User, projectRequestJson: String?, thumbnail: MultipartFile?): ProjectCreateResponse{
-        val objectMapper = ObjectMapper().apply {
-            registerModule(JavaTimeModule())  // LocalDate 변환 지원
-            configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false)  //알 수 없는 필드 무시
+        if (projectRequestJson.isNullOrBlank()) {
+            throw ProjectCreationException.badRequest("projectRequest가 필요합니다.")
         }
 
-        val request: ProjectCreateRequest = projectRequestJson?.let {
-            log.info("📢 [createProject] JSON 파싱 시작: $it")
-
-            try {
-                val parsedRequest = objectMapper.readValue(it, ProjectCreateRequest::class.java)
-                log.info("✅ [createProject] JSON 파싱 완료: 프로젝트 이름 -> ${parsedRequest.name}")
-                parsedRequest
-            } catch (e: JsonProcessingException) {
-                throw ProjectCreationException.badRequest("잘못된 JSON 형식입니다.")
-            }
-        } ?:  throw ProjectCreationException.badRequest("projectRequest가 필요합니다.")
-
-
         return try {
+            // ✅ JSON 파싱
+            log.info("📢 [createProject] JSON 파싱 시작: $projectRequestJson")
+            val request = objectMapper.readValue(projectRequestJson, ProjectCreateRequest::class.java)
+            log.info("✅ [createProject] JSON 파싱 완료: $request")
+
             // ✅ 썸네일 저장
-            val thumbnailPath: String? =  thumbnail?.takeIf { !it.isEmpty }?. let{
-                fileService.uploadThumbnail(it).also{
-                    path -> log.info("📢 [createProject] 썸네일 저장 완료: $path")
+            val thumbnailPath: String? = thumbnail?.takeIf { !it.isEmpty }?.let {
+                fileService.uploadThumbnail(it).also { path ->
+                    log.info("📢 [createProject] 썸네일 저장 완료: $path")
                 }
             }
 
-            // 프로젝트 엔티티 생성 및 저장
+            // ✅ 프로젝트 엔티티 생성 및 저장
             val project = Project(
                 user = user,
                 name = request.name,
@@ -75,22 +79,29 @@ class ProjectService(
                 repositoryLink = request.repositoryLink,
                 description = request.description,
                 imageUrl = request.imageUrl,
-                thumbnailPath = request.thumbnailPath,
+                thumbnailPath = thumbnailPath ?: request.thumbnailPath,  // 기존 값 유지
                 isDeleted = false
             )
 
-            projectRepository.save(project)
+            val savedProject = projectRepository.save(project)
 
-            // 기술 스택 & 사용 도구 저장
-            skillService.addProjectSkills(project.id, request.skills)
-            toolService.addProjectTools(project.id, request.tools)
+            // ✅ 기술 스택 & 사용 도구 저장
+            skillService.addProjectSkills(savedProject.id, request.skills)
+            toolService.addProjectTools(savedProject.id, request.tools)
 
-            ProjectCreateResponse(project.id!!) // projectId 반환
+            log.info("✅ [createProject] 프로젝트 등록 완료: ID=${savedProject.id}")
+            ProjectCreateResponse(savedProject.id!!)
 
-        } catch (ex: ProjectCreationException) {
-            throw ex  // 이미 정의된 예외는 다시 던진다.
-        }catch (ex : Exception) {
-            ex.printStackTrace()
+        } catch (e: JsonProcessingException) {
+            log.error("❌ JSON 파싱 실패: ${e.message}")
+            throw ProjectCreationException.badRequest("잘못된 JSON 형식입니다. ${e.message}")
+
+        } catch (e: ConstraintViolationException) {
+            log.error("❌ 유효성 검증 실패: ${e.message}")
+            throw ProjectCreationException.badRequest("유효성 검증 실패: ${e.message}")
+
+        } catch (e: Exception) {
+            log.error("❌ 프로젝트 등록 중 오류 발생: ${e.message}", e)
             throw ProjectCreationException.serverError("프로젝트 등록 중 오류가 발생했습니다.")
         }
     }
@@ -171,6 +182,7 @@ class ProjectService(
     }
 
 
+
     @Transactional
     fun updateProject(
             projectId: Long,
@@ -182,11 +194,8 @@ class ProjectService(
 
         return try {
             // JSON -> ProjectUpdateRequest 변환
-            val request: ProjectUpdateRequest? = projectRequestJson?.takeIf { it.isNotBlank() }?.let{
-               val objectMapper = ObjectMapper().apply{
-                   registerModule(JavaTimeModule()) // LocalDate 변환 지원
-               }
-                objectMapper.readValue(it, ProjectUpdateRequest::class.java)
+            val request: ProjectUpdateRequest? = projectRequestJson?.takeIf { it.isNotBlank() }?.let {
+                objectMapper.readValue(it, ProjectUpdateRequest::class.java) // ✅ 기존 objectMapper 사용
             }
 
             // 프로젝트 조회
@@ -215,17 +224,26 @@ class ProjectService(
 
             var thumbnailPath: String? = project.thumbnailPath
 
-            // 썸네일 삭제 처리
-            if (deleteThumbnail == true) {
-                thumbnailPath?.let {  fileService.deleteFile(it) }
+
+            // 썸네일 삭제 처리 (null 체크 추가)
+            if (deleteThumbnail == true && !thumbnailPath.isNullOrBlank()) {
+                fileService.deleteFile(thumbnailPath)
                 thumbnailPath = null
             }
 
+
+
             // 새로운 썸네일 업로드
-            if (thumbnail?.isEmpty == false) {
-                thumbnailPath?.let {  fileService.deleteFile(it) }
-                thumbnailPath = fileService.uploadThumbnail(thumbnail);
+            try {
+                if (thumbnail?.isEmpty == false) {
+                    thumbnailPath?.let { fileService.deleteFile(it) }
+                    thumbnailPath = fileService.uploadThumbnail(thumbnail)
+                }
+            } catch (e: Exception) {
+                throw ProjectCreationException.serverError("썸네일 업로드 중 오류가 발생했습니다.")
             }
+
+
 
             // 기본 정보 업데이트
              request?.let {
@@ -325,23 +343,23 @@ class ProjectService(
     }
 
     //요청된 프로젝트 ID 중에서, 휴지통에 있는 프로젝트만 조회하고 검증하는 메서드
-    fun validateTrashProjects(projectIds: List<Long>):List<Project>{
+    fun validateTrashProjects(projectIds: List<Long>): List<Project> {
+        val trashProjects = projectRepository.findByIdInAndIsDeletedTrue(ArrayList(projectIds))
 
-        val trashProjects = projectRepository.findByIdInAndIsDeletedTrue(projectIds)
+        val validTrashIds = trashProjects.map { it.id }.toSet()
 
-        val validTrashIds = trashProjects.map {it.id}.toSet()
-
-        val invalidIds = projectIds.filter { it !in validTrashIds}
+        val invalidIds = projectIds.filter { it !in validTrashIds }
 
         if (invalidIds.isNotEmpty()) {
             throw ProjectCreationException.badRequest(
-                    "휴지통에 없는 프로젝트가 포함되어 있습니다: $invalidIds"
+                "휴지통에 없는 프로젝트가 포함되어 있습니다: $invalidIds"
             )
         }
 
         return trashProjects
-
     }
+
+
 
     fun restoreProjects(projectIds: List<Long> , user: User) {
         val trashProjects = validateTrashProjects(projectIds)
