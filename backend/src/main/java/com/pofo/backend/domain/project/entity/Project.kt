@@ -45,10 +45,10 @@ class Project(
     var thumbnailPath: String? =null,
 
     @OneToMany(mappedBy = "project", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val projectTools: MutableList<ProjectTool> = mutableListOf(),
+    var projectTools: MutableList<ProjectTool> = mutableListOf(),
 
     @OneToMany(mappedBy = "project", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val projectSkills: MutableList<ProjectSkill> =mutableListOf(),
+    var projectSkills: MutableList<ProjectSkill> =mutableListOf(),
 
     @Column(nullable = false)
     var isDeleted: Boolean = false // 기본값 false: 활성화, true: 휴지통 상태
