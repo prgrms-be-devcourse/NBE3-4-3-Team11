@@ -1,26 +1,18 @@
-package com.pofo.backend.common.jpa.entity;
+package com.pofo.backend.common.jpa.entity
 
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.MappedSuperclass;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.EntityListeners
+import jakarta.persistence.MappedSuperclass
+import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.LastModifiedDate
+import org.springframework.data.jpa.domain.support.AuditingEntityListener
+import java.time.LocalDateTime
 
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.LocalDateTime;
-
-@Getter
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners(AuditingEntityListener::class)
 @MappedSuperclass
-public class BaseTime extends BaseEntity {
+abstract class BaseTime : BaseEntity() {
 	@CreatedDate
-	@Setter(AccessLevel.PRIVATE)
-	private LocalDateTime createdAt;
+	lateinit var createdAt: LocalDateTime
 
 	@LastModifiedDate
-	@Setter(AccessLevel.PRIVATE)
-	private LocalDateTime updatedAt;
+	lateinit var updatedAt: LocalDateTime
 }
