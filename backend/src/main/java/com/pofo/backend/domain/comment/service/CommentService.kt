@@ -23,22 +23,18 @@ class CommentService(
 
     @Transactional
     fun create(id: Long, commentCreateRequest: CommentCreateRequest, user: User): CommentCreateResponse? {
-        if (user == null) {
-            throw CommentException("사용자 정보가 유효하지 않습니다.")
-        }
 
         val inquiry = inquiryRepository.findById(id)
             .orElseThrow { InquiryException("문의사항을 찾을 수 없습니다.") }
 
-        try {
+        return try {
             val comment = Comment(
                 user = user,
                 inquiry = inquiry,
                 content = commentCreateRequest.content
             )
-
             commentRepository.save(comment)
-            return comment.id?.let { CommentCreateResponse(it) }
+            comment.id?.let { CommentCreateResponse(it) }
         } catch (e: Exception) {
             throw CommentException("댓글 생성 중 오류가 발생했습니다. 원인: ${e.message}")
         }
@@ -53,7 +49,7 @@ class CommentService(
             throw CommentException("댓글을 수정할 권한이 없습니다.")
         }
 
-        try {
+        return try {
             // update 메서드 호출
             comment.update(commentUpdateRequest.content)
             return comment.id?.let { CommentUpdateResponse(it) }
@@ -68,7 +64,7 @@ class CommentService(
             .orElseThrow { CommentException("해당 댓글을 찾을 수 없습니다.") }
 
         if (comment.user.id != user.id) {
-            throw UnauthorizedActionException("댓글을 수정할 권한이 없습니다.")
+            throw UnauthorizedActionException("댓글을 삭제할 권한이 없습니다.")
         }
 
         try {
@@ -80,19 +76,27 @@ class CommentService(
 
     @Transactional(readOnly = true)
     fun findByInquiryId(inquiryId: Long): List<CommentDetailResponse> {
-        val comments = commentRepository.findByInquiryId(inquiryId)
-        return comments.map { it.createdAt?.let { it1 -> CommentDetailResponse(it.id, it.content, it1) }!! }
+        return commentRepository.findByInquiryId(inquiryId)
+            .mapNotNull { comment ->
+                comment.createdAt?.let { createdAt ->
+                    CommentDetailResponse(comment.id, comment.content, createdAt)
+                }
+            }
     }
 
     @Transactional(readOnly = true)
-    fun findById(id: Long): CommentDetailResponse? {
+    fun findById(id: Long): CommentDetailResponse {
         val comment = commentRepository.findById(id)
             .orElseThrow { CommentException("해당 댓글을 찾을 수 없습니다.") }
 
-        return comment.createdAt?.let { CommentDetailResponse(comment.id, comment.content, it) }
+        return CommentDetailResponse(
+            id = comment.id,
+            content = comment.content,
+            createdAt = comment.createdAt ?: throw CommentException("댓글의 생성 시간이 존재하지 않습니다.")
+        )
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     fun count(): Long {
         return commentRepository.count()
     }
