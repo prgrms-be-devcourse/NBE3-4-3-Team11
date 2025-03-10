@@ -27,31 +27,27 @@ class AdminService(
     @PostConstruct
     fun initializeAdminUser() {
         if (adminRepository.findByUsername(adminUsername).isEmpty) {
-            // Lombok 빌더를 이용하여 Admin 객체 생성
-            val admin = Admin.builder()
-                .username(adminUsername)
-                .password(passwordEncoder.encode(adminPassword))
-                .status(Admin.Status.ACTIVE)
-                .failureCount(0)
-                .build()
+            // 기본 생성자를 사용하고, 프로퍼티 접근 구문으로 값 할당
+            val admin = Admin()
+            admin.username = adminUsername
+            admin.password = passwordEncoder.encode(adminPassword)
+            admin.status = Admin.Status.ACTIVE
+            admin.failureCount = 0
             adminRepository.save(admin)
 
-            // AdminLoginHistory 객체도 빌더로 생성
-            val loginHistory = AdminLoginHistory.builder()
-                .admin(admin)
-                .loginStatus(AdminLoginHistory.SUCCESS)
-                .failureCount(0)
-                .build()
+            val loginHistory = AdminLoginHistory()
+            loginHistory.admin = admin
+            loginHistory.loginStatus = AdminLoginHistory.SUCCESS
+            loginHistory.failureCount = 0
             adminLoginHistoryRepository.save(loginHistory)
         }
     }
 
     @Transactional
     fun recordLoginFailure(username: String) {
-        val optionalAdmin = adminRepository.findByUsername(username)
+        val optionalAdmin: Optional<Admin> = adminRepository.findByUsername(username)
         if (optionalAdmin.isPresent) {
             val admin = optionalAdmin.get()
-            // 이미 실패횟수가 5 이상이면 추가 실패 기록 없이 종료
             if (admin.failureCount >= 5) return
 
             val newFailureCount = admin.failureCount + 1
@@ -62,28 +58,26 @@ class AdminService(
             }
             adminRepository.save(admin)
 
-            val loginHistory = AdminLoginHistory.builder()
-                .admin(admin)
-                .loginStatus(AdminLoginHistory.FAILED)
-                .failureCount(newFailureCount)
-                .build()
+            val loginHistory = AdminLoginHistory()
+            loginHistory.admin = admin
+            loginHistory.loginStatus = AdminLoginHistory.FAILED
+            loginHistory.failureCount = newFailureCount
             adminLoginHistoryRepository.save(loginHistory)
         }
     }
 
     @Transactional
     fun recordLoginSuccess(username: String) {
-        val optionalAdmin = adminRepository.findByUsername(username)
+        val optionalAdmin: Optional<Admin> = adminRepository.findByUsername(username)
         if (optionalAdmin.isPresent) {
             val admin = optionalAdmin.get()
             admin.failureCount = 0
             adminRepository.save(admin)
 
-            val loginHistory = AdminLoginHistory.builder()
-                .admin(admin)
-                .loginStatus(AdminLoginHistory.SUCCESS)
-                .failureCount(0)
-                .build()
+            val loginHistory = AdminLoginHistory()
+            loginHistory.admin = admin
+            loginHistory.loginStatus = AdminLoginHistory.SUCCESS
+            loginHistory.failureCount = 0
             adminLoginHistoryRepository.save(loginHistory)
         }
     }
