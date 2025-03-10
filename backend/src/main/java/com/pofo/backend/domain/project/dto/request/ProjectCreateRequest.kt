@@ -34,7 +34,7 @@ data class ProjectCreateRequest(
     @field:NotBlank
     val imageUrl: String,
 
-    val thumbnailPath: String,
+    val thumbnailPath: String?,
 
     @field:NotEmpty
     val skills: List<String> = emptyList(),
