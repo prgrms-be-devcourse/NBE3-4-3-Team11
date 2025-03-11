@@ -7,10 +7,9 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface ProjectToolRepository extends JpaRepository<ProjectTool, Long> {
-    void deleteByProjectId(Long projectId);
-    List<ProjectTool> findByProjectId(Long projectId);
-
-    void deleteByProjectIdIn(List<Long> projectIds);
+interface ProjectToolRepository : JpaRepository<ProjectTool, Long> {
+    fun deleteByProjectId(projectId: Long)
+    fun findByProjectId(projectId: Long):  List<ProjectTool>
+    fun deleteByProjectIdIn(projectIds: List<Long> )
 }
 

@@ -8,7 +8,9 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface ProjectMapper {
     @Mapping(source = "id", target = "projectId")
+    @Mapping(source = "deleted", target = "isDeleted")
     @Mapping(target = "skills", expression = "java(project.getProjectSkills().stream().map(ps -> ps.getSkill().getName()).collect(java.util.stream.Collectors.toList()))")
     @Mapping(target = "tools", expression = "java(project.getProjectTools().stream().map(pt -> pt.getTool().getName()).collect(java.util.stream.Collectors.toList()))")
+    @Mapping(target = "thumbnailPath", expression = "java(project.getThumbnailPath() != null ? project.getThumbnailPath() : \"default_project.png\")")
     ProjectDetailResponse projectToProjectDetailResponse(Project project);
 }

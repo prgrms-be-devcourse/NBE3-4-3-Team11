@@ -29,7 +29,7 @@ const ProjectDetails = () => {
       const res = await getProjectById(projectId);
       console.log("📢 [ProjectDetails] API 응답 데이터:", res);
 
-      if (res && res.resultCode === "200" && res.data) {
+      if (res.resultCode === "200" && res.data) {
         setProject(res.data); // ✅ `data.data` 대신 `data` 직접 저장
         console.log("📢 [ProjectDetails] 상태 업데이트 완료:", res.data);
       } else {
