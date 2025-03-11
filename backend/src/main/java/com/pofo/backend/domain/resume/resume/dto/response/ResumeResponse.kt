@@ -1,36 +1,28 @@
-package com.pofo.backend.domain.resume.resume.dto.response;
+package com.pofo.backend.domain.resume.resume.dto.response
 
-import com.pofo.backend.domain.resume.activity.activity.dto.ActivityResponse;
-import com.pofo.backend.domain.resume.course.dto.CourseResponse;
-import com.pofo.backend.domain.resume.education.dto.EducationResponse;
-import com.pofo.backend.domain.resume.experience.dto.ExperienceResponse;
-import com.pofo.backend.domain.resume.language.dto.LanguageResponse;
-import com.pofo.backend.domain.resume.license.dto.LicenseResponse;
-import java.time.LocalDate;
-import java.util.Set;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import com.pofo.backend.domain.resume.activity.activity.dto.ActivityResponse
+import com.pofo.backend.domain.resume.course.dto.CourseResponse
+import com.pofo.backend.domain.resume.education.dto.EducationResponse
+import com.pofo.backend.domain.resume.experience.dto.ExperienceResponse
+import com.pofo.backend.domain.resume.language.dto.LanguageResponse
+import com.pofo.backend.domain.resume.license.dto.LicenseResponse
+import java.time.LocalDate
 
-@Builder
-@Getter
-@Setter
-public class ResumeResponse {
-    private String name;
-    private LocalDate birth;
-    private String number;
-    private String email;
-    private String address;
-    private String addressDetail;
-    private String gitAddress;
-    private String blogAddress;
-    private Set<ActivityResponse> activities;
-    private Set<CourseResponse> courses;
-    private Set<ExperienceResponse> experiences;
-    private Set<EducationResponse> educations;
-    private Set<LicenseResponse> licenses;
-    private Set<LanguageResponse> languages;
-    private Set<SkillResponse> skills;
-    private Set<ToolResponse> tools;
-}
-
+data class ResumeResponse(
+    val name: String,
+    val birth: LocalDate,
+    val number: String,
+    val email: String,
+    val address: String,
+    val addressDetail: String,
+    val gitAddress: String? = null,
+    val blogAddress: String? = null,
+    val activities: Set<ActivityResponse> = emptySet(),
+    val courses: Set<CourseResponse> = emptySet(),
+    val experiences: Set<ExperienceResponse> = emptySet(),
+    val educations: Set<EducationResponse> = emptySet(),
+    val licenses: Set<LicenseResponse> = emptySet(),
+    val languages: Set<LanguageResponse> = emptySet(),
+    val skills: Set<SkillResponse> = emptySet(),
+    val tools: Set<ToolResponse> = emptySet()
+)
