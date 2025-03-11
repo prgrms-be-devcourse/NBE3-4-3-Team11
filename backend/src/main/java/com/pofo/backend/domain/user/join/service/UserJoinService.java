@@ -90,6 +90,7 @@ public class UserJoinService {
                     .age(userJoinRequestDto.getAge())
                     .jobInterest(userJoinRequestDto.getJobInterest())
                     .userStatus(userJoinRequestDto.getUserStatus())
+                    .dormantFlg("N")
                     .build();
             userRepository.save(newUser);
 
@@ -119,6 +120,7 @@ public class UserJoinService {
                 .age(userJoinRequestDto.getAge())
                 .jobInterest(userJoinRequestDto.getJobInterest())  // 🔥 관심 직종 추가
                 .userStatus(userJoinRequestDto.getUserStatus())    // 🔥 취업 상태 추가
+                .dormantFlg("N")
                 .build();
         userRepository.save(newUser);
 
