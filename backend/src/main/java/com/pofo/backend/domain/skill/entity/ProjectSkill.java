@@ -1,7 +1,6 @@
 package com.pofo.backend.domain.skill.entity;
 
 import com.pofo.backend.common.jpa.entity.BaseEntity;
-import com.pofo.backend.domain.project.entity.Project;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

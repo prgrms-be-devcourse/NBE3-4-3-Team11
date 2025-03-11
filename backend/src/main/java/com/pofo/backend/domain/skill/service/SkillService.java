@@ -1,6 +1,5 @@
 package com.pofo.backend.domain.skill.service;
 
-import com.pofo.backend.domain.project.entity.Project;
 import com.pofo.backend.domain.project.exception.ProjectCreationException;
 import com.pofo.backend.domain.project.repository.ProjectRepository;
 import com.pofo.backend.domain.skill.dto.SkillProjection;

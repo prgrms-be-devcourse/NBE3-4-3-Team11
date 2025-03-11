@@ -1,7 +1,7 @@
 package com.pofo.backend.domain.mapper;
 
 import com.pofo.backend.domain.project.dto.response.ProjectDetailResponse;
-import com.pofo.backend.domain.project.entity.Project;
+
 import javax.annotation.processing.Generated;
 import org.springframework.stereotype.Component;
 
