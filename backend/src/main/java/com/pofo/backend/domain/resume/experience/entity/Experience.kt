@@ -1,40 +1,32 @@
-package com.pofo.backend.domain.resume.experience.entity;
+package com.pofo.backend.domain.resume.experience.entity
 
-import com.pofo.backend.common.jpa.entity.BaseTime;
-import com.pofo.backend.domain.resume.resume.entity.Resume;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import java.time.LocalDate;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Builder;
+import com.pofo.backend.common.jpa.entity.BaseTime
+import com.pofo.backend.domain.resume.resume.entity.Resume
+import jakarta.persistence.*
+import java.time.LocalDate
 
 @Entity
 @Table(name = "experiences")
-@Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PROTECTED)
-@Builder(toBuilder = true)
-public class Experience extends BaseTime {
+class Experience(
     @Column(nullable = false)
-    private String name;
+    var name: String,
+
     @Column(nullable = false)
-    private String department;
+    var department: String,
+
     @Column(nullable = false)
-    private String position;
+    var position: String,
+
     @Column(nullable = false)
-    private String responsibility;
+    var responsibility: String,
+
     @Column(nullable = false)
-    private LocalDate startDate;
+    var startDate: LocalDate,
+
     @Column(nullable = false)
-    private LocalDate endDate;
+    var endDate: LocalDate,
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "resume_id", nullable = false)
-    private Resume resume;
-}
+    var resume: Resume
+) : BaseTime()
