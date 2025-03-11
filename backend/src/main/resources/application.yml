@@ -1,3 +1,6 @@
+file:
+  upload-dir: ${user.dir}/uploads/
+
 spring:
   mail:
     host: ${SPRING_MAIL_HOST}
@@ -35,7 +38,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: update
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
@@ -95,8 +98,11 @@ spring:
   profiles:
     active: oauth
 
-file:
-  upload-dir: ${user.dir}/uploads/
+  web:
+    resources:
+      static-locations: file:${file.upload-dir}/
+  mvc:
+    static-path-pattern: /uploads/**
 
 springdoc:
   default-produces-media-type: application/json;charset=UTF-8
