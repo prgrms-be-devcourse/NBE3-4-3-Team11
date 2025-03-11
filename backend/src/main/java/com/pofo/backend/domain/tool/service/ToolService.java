@@ -1,5 +1,6 @@
 package com.pofo.backend.domain.tool.service;
 
+import com.pofo.backend.domain.project.entity.Project;
 import com.pofo.backend.domain.project.exception.ProjectCreationException;
 import com.pofo.backend.domain.project.repository.ProjectRepository;
 import com.pofo.backend.domain.tool.dto.ToolProjection;
