@@ -44,11 +44,6 @@ class ResumeService(
     fun updateResume(request: ResumeCreateRequest, user: User): Resume {
         val resume = resumeRepository.findByUser(user)
             .orElseThrow { ResumeCreationException("이력서를 찾을 수 없습니다.") }
-
-        if (resume.id != null && resume.user != user) {
-            throw UnauthorizedActionException("다른 사용자의 이력서를 수정할 수 없습니다.")
-        }
-
         resumeRepository.delete(resume)
 
         return createResume(request, user)
