@@ -1,28 +1,27 @@
-package com.pofo.backend.domain.resume.education.dto;
+package com.pofo.backend.domain.resume.education.dto
 
-import com.pofo.backend.domain.resume.education.entity.Education;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import java.time.LocalDate;
-import lombok.Getter;
-import lombok.Setter;
+import com.pofo.backend.domain.resume.education.entity.Education
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
+import java.time.LocalDate
+import java.util.*
 
-@Getter
-@Setter
-public class EducationRequest {
+data class EducationRequest(
+    @NotBlank
+    var name: String,
 
     @NotBlank
-    private String name;
-    @NotBlank
-    private String major;
+    var major: String,
+
     @NotNull
-    private LocalDate startDate;
-    @NotNull
-    private LocalDate endDate;
-    @NotBlank
-    private String status; // 상태 (EXPECTED, GRADUATED, ENROLLED, REST)
+    var startDate: LocalDate,
 
-    public Education.Status getStatusEnum() {
-        return Education.Status.valueOf(status.toUpperCase());
-    }
+    @NotNull
+    var endDate: LocalDate,
+
+    @NotBlank
+    var status: String,// 상태 (EXPECTED, GRADUATED, ENROLLED, REST)
+) {
+    val statusEnum: Education.Status
+        get() = Education.Status.valueOf(status!!.uppercase(Locale.getDefault()))
 }

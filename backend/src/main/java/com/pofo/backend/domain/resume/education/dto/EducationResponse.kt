@@ -1,19 +1,12 @@
-package com.pofo.backend.domain.resume.education.dto;
+package com.pofo.backend.domain.resume.education.dto
 
-import com.pofo.backend.domain.resume.education.entity.Education;
-import java.time.LocalDate;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import com.pofo.backend.domain.resume.education.entity.Education
+import java.time.LocalDate
 
-@Getter
-@Setter
-@Builder
-public class EducationResponse {
-
-    private String name;
-    private String major;
-    private LocalDate startDate;
-    private LocalDate endDate;
-    private Education.Status status;
-}
+data class EducationResponse(
+    val name: String? = null,
+    val major: String? = null,
+    val startDate: LocalDate? = null,
+    val endDate: LocalDate? = null,
+    val status: Education.Status? = null
+)
