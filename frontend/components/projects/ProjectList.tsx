@@ -286,7 +286,12 @@ const ProjectList = () => {
           cursor: pointer;
           margin-left: 10px;
         }
-
+        input[type="checkbox"] {
+          width: 20px; /* 체크박스 너비 */
+          height: 20px; /* 체크박스 높이 */
+          transform: scale(1); /* 기본 크기보다 1.5배 확대 */
+          cursor: pointer;
+        }
         .grid {
           display: flex;
           flex-wrap: wrap;
