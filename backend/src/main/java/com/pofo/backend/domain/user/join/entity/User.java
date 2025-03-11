@@ -64,7 +64,7 @@ public class User extends BaseEntity {
     // 휴먼 계정 여부 ("N" : 일반, "Y" : 휴먼)
     @Getter
     @Setter
-    @Column(nullable = false, name = "dormant_flg", columnDefinition = "varchar(1) default 'N'")
+    @Column(name = "dormant_flg", columnDefinition = "varchar(1) default 'N'")
     public String dormantFlg = "N";
 
     // 휴먼 처리 시작 시간
