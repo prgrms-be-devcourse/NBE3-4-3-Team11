@@ -1,8 +1,8 @@
-package com.pofo.backend.domain.admin.login.entitiy;
+package com.pofo.backend.domain.admin.login.entitiy
 
-import com.pofo.backend.common.jpa.entity.BaseTime;
-import jakarta.persistence.*;
-import lombok.*;
+import com.pofo.backend.common.jpa.entity.BaseTime
+import jakarta.persistence.*
+import lombok.*
 
 @Entity
 @Table(name = "admins")
@@ -11,22 +11,21 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Admin extends BaseTime {
-
+class Admin : BaseTime() {
     @Column(name = "username", nullable = false)
-    private String username;
+    var username: String? = null
 
     @Column(name = "password", nullable = false)
-    private String password;
+    var password: String? = null
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private Status status;
+    var status: Status? = null
 
     @Column(name = "failure_count", nullable = false, columnDefinition = "int default 0")
-    private int failureCount = 0;
+    var failureCount = 0
 
-    public enum Status {
+    enum class Status {
         ACTIVE,
         INACTIVE
     }
