@@ -1,41 +1,36 @@
-package com.pofo.backend.domain.resume.license.service;
+package com.pofo.backend.domain.resume.license.service
 
-import com.pofo.backend.domain.resume.license.dto.LicenseRequest;
-import com.pofo.backend.domain.resume.license.entity.License;
-import com.pofo.backend.domain.resume.license.repository.LicenseRepository;
-import com.pofo.backend.domain.resume.resume.entity.Resume;
-import com.pofo.backend.domain.resume.resume.exception.ResumeCreationException;
-import com.pofo.backend.domain.resume.resume.repository.ResumeRepository;
-import java.util.List;
-import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Service;
+import com.pofo.backend.domain.resume.license.dto.LicenseRequest
+import com.pofo.backend.domain.resume.license.entity.License
+import com.pofo.backend.domain.resume.license.repository.LicenseRepository
+import com.pofo.backend.domain.resume.resume.exception.ResumeCreationException
+import com.pofo.backend.domain.resume.resume.repository.ResumeRepository
+import org.springframework.stereotype.Service
 
 @Service
-@AllArgsConstructor
-public class LicenseService {
+class LicenseService(
+    private val licenseRepository: LicenseRepository,
+    private val resumeRepository: ResumeRepository
+) {
 
-    private final LicenseRepository licenseRepository;
-    private final ResumeRepository resumeRepository;
+    fun addLicenses(resumeId: Long, licenses: List<LicenseRequest>) {
+        val resume = resumeRepository.findById(resumeId)
+            .orElseThrow { ResumeCreationException("이력서를 찾을 수 없습니다.") }
 
-    public void addLicenses(Long resumeId, List<LicenseRequest> licenses) {
-        Resume resume = resumeRepository.findById(resumeId)
-            .orElseThrow(() -> new ResumeCreationException("이력서를 찾을 수 없습니다."));
+        val licenseEntities = licenses.map { licenseRequest ->
+            License(
+                name = licenseRequest.name,
+                institution = licenseRequest.institution,
+                certifiedDate = licenseRequest.certifiedDate,
+                resume = resume
+            )
+        }
 
-        List<License> licenseEntities = licenses.stream()
-            .map(licenseRequest -> License.builder()
-                .name(licenseRequest.getName())
-                .institution(licenseRequest.getInstitution())
-                .certifiedDate(licenseRequest.getCertifiedDate())
-                .resume(resume)
-                .build())
-            .collect(Collectors.toList());
-
-        licenseRepository.saveAll(licenseEntities);
+        licenseRepository.saveAll(licenseEntities)
     }
 
-    public void updateLicenses(Long resumeId, List<LicenseRequest> licenses) {
-        licenseRepository.deleteByResumeId(resumeId);
-        addLicenses(resumeId, licenses);
+    fun updateLicenses(resumeId: Long, licenses: List<LicenseRequest>) {
+        licenseRepository.deleteByResumeId(resumeId)
+        addLicenses(resumeId, licenses)
     }
 }

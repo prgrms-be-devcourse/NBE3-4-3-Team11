@@ -1,15 +1,9 @@
-package com.pofo.backend.domain.resume.license.dto;
+package com.pofo.backend.domain.resume.license.dto
 
-import java.time.LocalDate;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import java.time.LocalDate
 
-@Getter
-@Setter
-@Builder
-public class LicenseResponse {
-    private String name;
-    private String institution;
-    private LocalDate certifiedDate;
-}
+data class LicenseResponse(
+    val name: String,
+    val institution: String,
+    val certifiedDate: LocalDate
+)
