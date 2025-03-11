@@ -1,14 +1,10 @@
-package com.pofo.backend.domain.resume.course.dto;
+package com.pofo.backend.domain.resume.course.dto
 
-import java.time.LocalDate;
-import lombok.Builder;
-import lombok.Getter;
+import java.time.LocalDate
 
-@Getter
-@Builder
-public class CourseResponse {
-    private String name;
-    private String institution;
-    private LocalDate startDate;
-    private LocalDate endDate;
-}
+data class CourseResponse(
+    val name: String,
+    val institution: String,
+    val startDate: LocalDate,
+    val endDate: LocalDate
+)

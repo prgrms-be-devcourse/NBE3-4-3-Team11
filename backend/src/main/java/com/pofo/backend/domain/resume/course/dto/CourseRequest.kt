@@ -1,21 +1,19 @@
-package com.pofo.backend.domain.resume.course.dto;
+package com.pofo.backend.domain.resume.course.dto
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import java.time.LocalDate;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
+import java.time.LocalDate
 
-@Getter
-@Setter
-public class CourseRequest {
-    @NotBlank
-    private String name;
-    @NotBlank
-    private String institution;
-    @NotNull
-    private LocalDate startDate;
-    @NotNull
-    private LocalDate endDate;
+data class CourseRequest(
+    @field:NotBlank
+    val name: String,
 
-}
+    @field:NotBlank
+    val institution: String,
+
+    @field:NotNull
+    val startDate: LocalDate,
+
+    @field:NotNull
+    val endDate: LocalDate
+)

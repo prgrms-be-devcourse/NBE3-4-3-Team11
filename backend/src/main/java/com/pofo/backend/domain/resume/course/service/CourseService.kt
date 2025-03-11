@@ -1,43 +1,38 @@
-package com.pofo.backend.domain.resume.course.service;
+package com.pofo.backend.domain.resume.course.service
 
-import com.pofo.backend.domain.resume.course.dto.CourseRequest;
-import com.pofo.backend.domain.resume.course.entity.Course;
-import com.pofo.backend.domain.resume.course.repository.CourseRepository;
-import com.pofo.backend.domain.resume.resume.entity.Resume;
-import com.pofo.backend.domain.resume.resume.exception.ResumeCreationException;
-import com.pofo.backend.domain.resume.resume.repository.ResumeRepository;
-import java.util.List;
-import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import com.pofo.backend.domain.resume.course.dto.CourseRequest
+import com.pofo.backend.domain.resume.course.entity.Course
+import com.pofo.backend.domain.resume.course.repository.CourseRepository
+import com.pofo.backend.domain.resume.resume.exception.ResumeCreationException
+import com.pofo.backend.domain.resume.resume.repository.ResumeRepository
+import org.springframework.stereotype.Service
 
 @Service
-@RequiredArgsConstructor
-public class CourseService {
+class CourseService(
+    private val courseRepository: CourseRepository,
+    private val resumeRepository: ResumeRepository
+) {
 
-    private final CourseRepository courseRepository;
-    private final ResumeRepository resumeRepository;
+    fun addCourses(resumeId: Long, courseRequests: List<CourseRequest>) {
+        val resume = resumeRepository.findById(resumeId)
+            .orElseThrow { ResumeCreationException("이력서를 찾을 수 없습니다.") }
 
-    public void addCourses(Long resumeId, List<CourseRequest> courseRequests) {
-        Resume resume = resumeRepository.findById(resumeId)
-            .orElseThrow(() -> new ResumeCreationException("이력서를 찾을 수 없습니다."));
+        val courseEntities = courseRequests.map { courseRequest ->
+            // 빌더 대신 직접 생성
+            Course(
+                name = courseRequest.name,
+                institution = courseRequest.institution,
+                startDate = courseRequest.startDate,
+                endDate = courseRequest.endDate,
+                resume = resume
+            )
+        }
 
-        List<Course> courseEntities = courseRequests.stream()
-            .map(courseRequest -> Course.builder()
-                .name(courseRequest.getName())
-                .institution(courseRequest.getInstitution())
-                .startDate(courseRequest.getStartDate())
-                .endDate(courseRequest.getEndDate())
-                .resume(resume)
-                .build())
-            .collect(Collectors.toList());
-
-        courseRepository.saveAll(courseEntities);
+        courseRepository.saveAll(courseEntities)
     }
 
-    public void updateCourses(Long resumeId, List<CourseRequest> courseRequests) {
-        courseRepository.deleteByResumeId(resumeId);
-        addCourses(resumeId, courseRequests);
+    fun updateCourses(resumeId: Long, courseRequests: List<CourseRequest>) {
+        courseRepository.deleteByResumeId(resumeId)
+        addCourses(resumeId, courseRequests)
     }
-
 }
