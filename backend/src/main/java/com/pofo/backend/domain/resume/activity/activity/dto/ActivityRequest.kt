@@ -1,25 +1,14 @@
-package com.pofo.backend.domain.resume.activity.activity.dto;
+package com.pofo.backend.domain.resume.activity.activity.dto
 
-import com.pofo.backend.domain.resume.activity.award.dto.AwardRequest;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import lombok.Getter;
-import lombok.Setter;
+import com.pofo.backend.domain.resume.activity.award.dto.AwardRequest
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
+import java.time.LocalDate
 
-@Getter
-@Setter
-public class ActivityRequest {
-    @NotBlank
-    private String name;
-    @NotBlank
-    private String history;
-    @NotNull
-    private LocalDate startDate;
-    @NotNull
-    private LocalDate endDate;
-    private List<AwardRequest> awards = new ArrayList<>();
-
-}
+data class ActivityRequest(
+    @field:NotBlank val name: String,
+    @field:NotBlank val history: String,
+    @field:NotNull val startDate: LocalDate,
+    @field:NotNull val endDate: LocalDate,
+    val awards: List<AwardRequest> = emptyList()
+)
