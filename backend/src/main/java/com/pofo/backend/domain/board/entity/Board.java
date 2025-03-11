@@ -9,7 +9,7 @@ import lombok.*;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
+//@AllArgsConstructor
 @Builder
 @Table(name = "boards")
 public class Board extends BaseTime { //base엔티티에 테이블id존재,  상속받음
@@ -23,4 +23,11 @@ public class Board extends BaseTime { //base엔티티에 테이블id존재,  상
 
     @Column(columnDefinition = "TEXT", nullable = false) // 마크다운 저장
     private String content;
+
+    // 명시적 생성자 추가
+    public Board(User user, String title, String content) {
+        this.user = user;
+        this.title = title;
+        this.content = content;
+    }
 }
