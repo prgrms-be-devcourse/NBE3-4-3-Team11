@@ -3,28 +3,31 @@ package com.pofo.backend.common.rsData;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.pofo.backend.common.base.Empty;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.springframework.lang.NonNull;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@AllArgsConstructor
+//@AllArgsConstructor
 @Getter
 public class RsData<T> {
 	public static final RsData<Empty> OK = new RsData<>("200", "OK", new Empty());
 
-	@NonNull
 	private final String resultCode;
-
-	@NonNull
 	private final String message;
-
-	@NonNull
 	private final T data;
 
+	// ✅ 기존 생성자 유지 (data 없이 생성 가능)
 	public RsData(String resultCode, String message) {
-		this(resultCode, message, (T) new Empty());
+		this.resultCode = resultCode;
+		this.message = message;
+		this.data = null;
+	}
+
+	// ✅ data 포함한 생성자 추가
+	public RsData(String resultCode, String message, T data) {
+		this.resultCode = resultCode;
+		this.message = message;
+		this.data = data;
 	}
 
 	@JsonIgnore
