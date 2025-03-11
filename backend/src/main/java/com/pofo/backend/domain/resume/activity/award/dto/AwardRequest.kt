@@ -1,19 +1,12 @@
-package com.pofo.backend.domain.resume.activity.award.dto;
+package com.pofo.backend.domain.resume.activity.award.dto
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import java.time.LocalDate;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
+import java.time.LocalDate
 
-@Getter
-@Setter
-public class AwardRequest {
-    @NotBlank
-    private String name;
-    @NotBlank
-    private String institution;
-    @NotNull
-    private LocalDate awardDate;
 
-}
+data class AwardRequest(
+    @field:NotBlank val name: String,
+    @field:NotBlank val institution: String,
+    @field:NotNull val awardDate: LocalDate
+)

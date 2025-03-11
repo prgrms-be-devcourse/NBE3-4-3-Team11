@@ -1,34 +1,27 @@
-package com.pofo.backend.domain.resume.activity.award.entity;
+package com.pofo.backend.domain.resume.activity.award.entity
 
-import com.pofo.backend.common.jpa.entity.BaseTime;
-import com.pofo.backend.domain.resume.activity.activity.entity.Activity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import java.time.LocalDate;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.pofo.backend.common.jpa.entity.BaseTime
+import com.pofo.backend.domain.resume.activity.activity.entity.Activity
+import jakarta.persistence.*
+import lombok.AccessLevel
+import lombok.Getter
+import lombok.NoArgsConstructor
+import java.time.LocalDate
 
 @Entity
 @Table(name = "awards")
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PROTECTED)
-@Builder(toBuilder = true)
-public class Award extends BaseTime {
+class Award(
     @Column(nullable = false)
-    private String name;
+    val name: String,
+
     @Column(nullable = false)
-    private String institution;
+    val institution: String,
+
     @Column(nullable = false)
-    private LocalDate awardDate;
+    val awardDate: LocalDate,
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "activity_id", nullable = false)
-    private Activity activity;
-}
+    val activity: Activity
+) : BaseTime()

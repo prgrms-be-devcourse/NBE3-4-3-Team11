@@ -1,13 +1,9 @@
-package com.pofo.backend.domain.resume.activity.award.dto;
+package com.pofo.backend.domain.resume.activity.award.dto
 
-import java.time.LocalDate;
-import lombok.Builder;
-import lombok.Getter;
+import java.time.LocalDate
 
-@Getter
-@Builder
-public class AwardResponse {
-    private String name;
-    private String institution;
-    private LocalDate awardDate;
-}
+data class AwardResponse(
+    val name: String,
+    val institution: String,
+    val awardDate: LocalDate
+)
