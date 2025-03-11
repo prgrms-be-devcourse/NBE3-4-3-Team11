@@ -1,21 +1,12 @@
-package com.pofo.backend.domain.resume.language.dto;
+package com.pofo.backend.domain.resume.language.dto
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import java.time.LocalDate;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotNull
+import java.time.LocalDate
 
-@Getter
-@Setter
-public class LanguageRequest {
-    @NotBlank
-    private String language;
-    @NotBlank
-    private String name;
-    @NotBlank
-    private String result;
-    @NotNull
-    private LocalDate certifiedDate;
-
-}
+data class LanguageRequest(
+    @field:NotBlank val language: String,
+    @field:NotBlank val name: String,
+    @field:NotBlank val result: String,
+    @field:NotNull val certifiedDate: LocalDate
+)

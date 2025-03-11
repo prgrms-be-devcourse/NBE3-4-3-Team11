@@ -1,43 +1,37 @@
-package com.pofo.backend.domain.resume.language.service;
+package com.pofo.backend.domain.resume.language.service
 
-import com.pofo.backend.domain.resume.language.dto.LanguageRequest;
-import com.pofo.backend.domain.resume.language.entity.Language;
-import com.pofo.backend.domain.resume.language.repository.LanguageRepository;
-import com.pofo.backend.domain.resume.resume.entity.Resume;
-import com.pofo.backend.domain.resume.resume.exception.ResumeCreationException;
-import com.pofo.backend.domain.resume.resume.repository.ResumeRepository;
-import java.util.List;
-import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Service;
+import com.pofo.backend.domain.resume.language.dto.LanguageRequest
+import com.pofo.backend.domain.resume.language.entity.Language
+import com.pofo.backend.domain.resume.language.repository.LanguageRepository
+import com.pofo.backend.domain.resume.resume.exception.ResumeCreationException
+import com.pofo.backend.domain.resume.resume.repository.ResumeRepository
+import org.springframework.stereotype.Service
 
 @Service
-@AllArgsConstructor
-public class LanguageService {
+class LanguageService(
+    private val languageRepository: LanguageRepository,
+    private val resumeRepository: ResumeRepository
+) {
 
-    private final LanguageRepository languageRepository;
-    private final ResumeRepository resumeRepository;
+    fun addLanguages(resumeId: Long, languages: List<LanguageRequest>) {
+        val resume = resumeRepository.findById(resumeId)
+            .orElseThrow { ResumeCreationException("이력서를 찾을 수 없습니다.") }
 
-    public void addLanguages(Long resumeId, List<LanguageRequest> languages) {
-        Resume resume = resumeRepository.findById(resumeId)
-            .orElseThrow(() -> new ResumeCreationException("이력서를 찾을 수 없습니다."));
+        val languageEntities = languages.map { languageRequest ->
+            Language(
+                language = languageRequest.language,
+                result = languageRequest.result,
+                certifiedDate = languageRequest.certifiedDate,
+                name = languageRequest.name,
+                resume = resume
+            )
+        }
 
-        List<Language> languageEntities = languages.stream()
-            .map(languageRequest -> Language.builder()
-                .language(languageRequest.getLanguage())
-                .result(languageRequest.getResult())
-                .certifiedDate(languageRequest.getCertifiedDate())
-                .name(languageRequest.getName())
-                .resume(resume)
-                .build())
-            .collect(Collectors.toList());
-
-        languageRepository.saveAll(languageEntities);
+        languageRepository.saveAll(languageEntities)
     }
 
-    public void updateLanguages(Long resumeId, List<LanguageRequest> languages) {
-        languageRepository.deleteByResumeId(resumeId);
-        addLanguages(resumeId, languages);
+    fun updateLanguages(resumeId: Long, languages: List<LanguageRequest>) {
+        languageRepository.deleteByResumeId(resumeId)
+        addLanguages(resumeId, languages)
     }
-
 }

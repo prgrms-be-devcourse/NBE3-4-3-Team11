@@ -1,16 +1,10 @@
-package com.pofo.backend.domain.resume.language.dto;
+package com.pofo.backend.domain.resume.language.dto
 
-import java.time.LocalDate;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import java.time.LocalDate
 
-@Getter
-@Setter
-@Builder
-public class LanguageResponse {
-    private String language;
-    private String name;
-    private String result;
-    private LocalDate certifiedDate;
-}
+data class LanguageResponse(
+    val language: String,
+    val name: String,
+    val result: String,
+    val certifiedDate: LocalDate
+)
