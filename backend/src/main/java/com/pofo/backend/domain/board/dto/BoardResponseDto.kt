@@ -29,32 +29,49 @@
 //
 //    }
 //}
-
+//
 package com.pofo.backend.domain.board.dto
 
 import com.pofo.backend.domain.board.entity.Board
-import com.pofo.backend.domain.user.join.entity.User
 import java.time.LocalDateTime
+//
+//// 게시글 상세 조회 -> GET /api/v1/user/boards/{id}
+//data class BoardResponseDto(
+//    val id: Long,  // 게시글 ID
+//    val title: String,
+//    val content: String,
+//    val createdAt: LocalDateTime,  // 작성일자 필드 추가
+//    val updatedAt: LocalDateTime,  // 수정일자 필드 추가
+//    val userId: Long // ✅ 작성자 ID 추가
+//) {
+//    constructor(board: Board) : this(
+//        id = board::class.java.getMethod("getId").invoke(board) as Long,  // ✅ Reflection 사용
+//        title = board::class.java.getMethod("getTitle").invoke(board) as String,
+//        content = board::class.java.getMethod("getContent").invoke(board) as String,
+//        createdAt = board::class.java.getMethod("getCreatedAt").invoke(board) as LocalDateTime,
+//        updatedAt = board::class.java.getMethod("getUpdatedAt").invoke(board) as LocalDateTime,
+////        userId = (board::class.java.getMethod("getUser").invoke(board) as? User)?.id ?: 0L
+//        userId = (board::class.java.getMethod("getUser").invoke(board) as? User)
+//            ?.let { it::class.java.getMethod("getId").invoke(it) as Long } ?: 0L // ✅ User의 id도 Reflection 사용
+//
+//    )
+//}
 
-// 게시글 상세 조회 -> GET /api/v1/user/boards/{id}
 data class BoardResponseDto(
-    val id: Long,  // 게시글 ID
+    val id: Long?,  // 게시글 ID
     val title: String,
     val content: String,
-    val createdAt: LocalDateTime,  // 작성일자 필드 추가
-    val updatedAt: LocalDateTime,  // 수정일자 필드 추가
-    val userId: Long // ✅ 작성자 ID 추가
+    val createdAt: LocalDateTime?,  // 작성일자 필드 추가
+    val updatedAt: LocalDateTime?,  // 수정일자 필드 추가
+    val userId: Long?  // 작성자 ID 추가
 ) {
     constructor(board: Board) : this(
-        id = board::class.java.getMethod("getId").invoke(board) as Long,  // ✅ Reflection 사용
-        title = board::class.java.getMethod("getTitle").invoke(board) as String,
-        content = board::class.java.getMethod("getContent").invoke(board) as String,
-        createdAt = board::class.java.getMethod("getCreatedAt").invoke(board) as LocalDateTime,
-        updatedAt = board::class.java.getMethod("getUpdatedAt").invoke(board) as LocalDateTime,
-//        userId = (board::class.java.getMethod("getUser").invoke(board) as? User)?.id ?: 0L
-        userId = (board::class.java.getMethod("getUser").invoke(board) as? User)
-            ?.let { it::class.java.getMethod("getId").invoke(it) as Long } ?: 0L // ✅ User의 id도 Reflection 사용
-
+        id = board.id,
+        title = board.title,
+        content = board.content,
+        createdAt = board.createdAt,
+        updatedAt = board.updatedAt,
+        userId = board.user.id  // :흰색_확인_표시: Reflection 없이 직접 접근
     )
 }
 
