@@ -2,7 +2,10 @@ package com.pofo.backend.domain.skill.entity;
 
 import com.pofo.backend.common.jpa.entity.BaseEntity;
 import com.pofo.backend.domain.project.entity.Project;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

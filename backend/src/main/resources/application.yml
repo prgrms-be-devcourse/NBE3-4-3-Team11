@@ -109,7 +109,7 @@ springdoc:
 
 logging:
   level:
-    org.hibernate.SQL: INFO            # Hibernate SQL 로그를 ERROR 레벨로 변경
+    org.hibernate.SQL: ERROR
     org.hibernate.orm.jdbc.bind: ERROR
     org.hibernate.orm.jdbc.extract: ERROR
     org.springframework.data.redis: INFO
@@ -130,11 +130,3 @@ auth:
 aes:
   secret:
     key: ${AES_SECRET_KEY}
-
-# JWT Test Settings (commented out)
-#jwt:
-#  expiration:
-#    time: 60000  # AccessToken expired time : 1m(60sec)
-#  refresh-token:
-#    expiration-time: 120000  # RefreshToken expired time : 2min(120sec)
-

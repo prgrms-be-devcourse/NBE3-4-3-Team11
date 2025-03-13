@@ -29,6 +29,8 @@ public class UserJoinRequestDto {
     @NotBlank(message = "닉네임을 입력 해 주세요.")
     private String nickname;
 
+    private String dormantFlg;
+
     @NotNull(message = "성별을 선택 해 주세요.")
     //private Sex sex;
     private User.Sex sex;
